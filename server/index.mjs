@@ -19,7 +19,7 @@ const bindAddress = process.env.LANTV_BIND ?? "0.0.0.0";
 const remoteCommands = new Set([
   "up", "down", "left", "right", "ok", "back", "home",
   "playPause", "previous", "next", "volumeUp", "volumeDown",
-  "mute", "search", "menu"
+  "mute", "search", "menu", "exit"
 ]);
 let activeRuntimePid = null;
 
@@ -67,7 +67,7 @@ async function loadState() {
   try {
     const loaded = JSON.parse(await fs.readFile(statePath, "utf8"));
     const builtinsById = new Map(builtinCatalog.apps.map((item) => [item.id, item]));
-    const mergedApps = loaded.apps.map((item) => {
+    const mergedApps = loaded.apps.filter((item) => item.id !== "settings").map((item) => {
       const builtin = builtinsById.get(item.id);
       return builtin && builtin.removable === false
         ? { ...builtin, ...item, launch: { ...builtin.launch, ...item.launch } }
@@ -450,14 +450,14 @@ function handleRemoteCommand(command) {
     return;
   }
 
-  if (command === "home") {
+  if (command === "home" || command === "exit") {
     try {
       process.kill(-activeRuntimePid, "SIGTERM");
     } catch {
       // The application may already be closing.
     }
     activeRuntimePid = null;
-    broadcast({ type: "command", command: "home" }, "tv");
+    broadcast({ type: "command", command }, "tv");
     setTimeout(() => {
       runDesktopCommand("/usr/bin/xdotool", [
         "search", "--onlyvisible", "--class", "chromium",

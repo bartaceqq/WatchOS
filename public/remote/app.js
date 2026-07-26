@@ -1,6 +1,5 @@
 const tokenKey = "watchos.remote.token";
 const elements = {
-  deviceName: document.querySelector("#device-name"),
   status: document.querySelector("#status"),
   pairCard: document.querySelector("#pair-card"),
   pairForm: document.querySelector("#pair-form"),
@@ -52,7 +51,6 @@ async function pair(event) {
 
   token = result.token;
   localStorage.setItem(tokenKey, token);
-  elements.deviceName.textContent = result.device.name;
   showControls(true);
   connect();
 }
@@ -93,7 +91,6 @@ function send(message) {
 
 function renderState(nextState) {
   state = nextState;
-  elements.deviceName.textContent = state.device?.name ?? "WatchOS";
   elements.appList.replaceChildren();
   const favorites = state.favorites?.length
     ? state.favorites.map((id) => state.apps.find((app) => app.id === id)).filter(Boolean)

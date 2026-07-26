@@ -13,8 +13,8 @@
   <main class="remote-shell">
     <header>
       <div>
-        <span class="overline">LANTV REMOTE</span>
-        <h1 id="device-name">Living Room</h1>
+        <span class="overline">WATCHOS</span>
+        <h1 id="device-name">TV Remote</h1>
       </div>
       <span class="status" id="status"><i></i><span>Offline</span></span>
     </header>
@@ -31,37 +31,41 @@
     </section>
 
     <section class="controls" id="controls" hidden>
+      <div class="system-row" aria-label="System controls">
+        <button data-command="exit"><strong>&times;</strong><span>Exit</span></button>
+        <button data-command="back"><strong>&#8617;</strong><span>Return</span></button>
+        <button data-command="home"><strong>&#8962;</strong><span>Home</span></button>
+      </div>
+
       <div class="quick-row">
-        <button class="round" data-command="home" aria-label="Home">⌂</button>
-        <button class="round" data-command="back" aria-label="Back">↶</button>
         <button class="search-button" data-command="search">
-          <span>⌕</span> Search on TV
+          <span>&#9906;</span> Search on TV
         </button>
-        <button class="round" data-command="menu" aria-label="Menu">•••</button>
+        <button class="round" data-command="menu" aria-label="Settings and menu">&#8943;</button>
       </div>
 
       <div class="dpad" aria-label="Directional controls">
-        <button class="dpad-up" data-command="up" aria-label="Up">▲</button>
-        <button class="dpad-left" data-command="left" aria-label="Left">◀</button>
+        <button class="dpad-up" data-command="up" aria-label="Up">&#9650;</button>
+        <button class="dpad-left" data-command="left" aria-label="Left">&#9664;</button>
         <button class="dpad-ok" data-command="ok" aria-label="OK">OK</button>
-        <button class="dpad-right" data-command="right" aria-label="Right">▶</button>
-        <button class="dpad-down" data-command="down" aria-label="Down">▼</button>
+        <button class="dpad-right" data-command="right" aria-label="Right">&#9654;</button>
+        <button class="dpad-down" data-command="down" aria-label="Down">&#9660;</button>
       </div>
 
       <div class="media-row">
-        <button data-command="previous" aria-label="Previous">|◀</button>
-        <button class="play" data-command="playPause" aria-label="Play or pause">▶︎</button>
-        <button data-command="next" aria-label="Next">▶|</button>
+        <button data-command="previous" aria-label="Previous">|&#9664;</button>
+        <button class="play" data-command="playPause" aria-label="Play or pause">&#9654;</button>
+        <button data-command="next" aria-label="Next">&#9654;|</button>
       </div>
 
       <div class="volume-row">
-        <button data-command="volumeDown"><span>−</span> Volume</button>
-        <button data-command="mute" aria-label="Mute">⌁</button>
+        <button data-command="volumeDown"><span>&minus;</span> Volume</button>
+        <button data-command="mute" aria-label="Mute">&#128263;</button>
         <button data-command="volumeUp"><span>+</span> Volume</button>
       </div>
 
       <form class="keyboard" id="keyboard-form">
-        <input id="keyboard-input" placeholder="Type on the TV…" autocomplete="off">
+        <input id="keyboard-input" placeholder="Type on the TV..." autocomplete="off">
         <button type="submit">Send</button>
       </form>
 

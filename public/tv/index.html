@@ -13,17 +13,15 @@
 
   <main class="shell">
     <header class="topbar">
-      <div class="brand">
-        <span class="brand-mark" aria-hidden="true">
-          <span></span><span></span><span></span>
-        </span>
-        <span id="device-name">WatchOS</span>
-      </div>
-      <div class="topbar-status">
-        <span class="connection" id="connection">
-          <i></i><span>Connecting</span>
-        </span>
-        <time id="clock">--:--</time>
+      <div class="topbar-actions">
+        <div class="clock-card">
+          <span id="date">WELCOME</span>
+          <time id="clock">--:--</time>
+        </div>
+        <a class="settings-button" href="/admin/" aria-label="Open settings">
+          <span class="settings-icon" aria-hidden="true">&#9881;</span>
+          <span>Settings</span>
+        </a>
       </div>
     </header>
 
@@ -34,7 +32,7 @@
         <p id="hero-description">Everything on your television, controlled from your phone.</p>
         <div class="hero-actions">
           <button class="primary-action" id="open-selected" type="button">
-            <span class="play-icon">▶</span>
+            <span class="play-icon">&#9654;</span>
             Open
           </button>
           <div class="pairing-pill">
@@ -58,10 +56,11 @@
     </section>
 
     <footer class="footer">
-      <div class="key-hint"><kbd>←</kbd><kbd>→</kbd><span>Navigate</span></div>
-      <div class="key-hint"><kbd>↵</kbd><span>Open</span></div>
-      <div class="key-hint"><kbd>⌂</kbd><span>Home</span></div>
-      <a href="/admin/" class="manage-link">Manage apps</a>
+      <div class="key-hint"><kbd>&larr;</kbd><kbd>&rarr;</kbd><span>Navigate</span></div>
+      <div class="key-hint"><kbd>Enter</kbd><span>Open</span></div>
+      <div class="key-hint"><kbd>Esc</kbd><span>Return</span></div>
+      <div class="key-hint"><kbd>F4</kbd><span>Exit app</span></div>
+      <div class="key-hint"><kbd>Home</kbd><span>Home</span></div>
     </footer>
   </main>
 

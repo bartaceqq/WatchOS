@@ -1,7 +1,6 @@
 const elements = {
-  deviceName: document.querySelector("#device-name"),
-  connection: document.querySelector("#connection"),
   clock: document.querySelector("#clock"),
+  date: document.querySelector("#date"),
   hero: document.querySelector("#hero"),
   heroCategory: document.querySelector("#hero-category"),
   heroTitle: document.querySelector("#hero-title"),
@@ -21,10 +20,16 @@ let reconnectTimer;
 let toastTimer;
 
 function updateClock() {
+  const now = new Date();
   elements.clock.textContent = new Intl.DateTimeFormat([], {
     hour: "2-digit",
     minute: "2-digit"
-  }).format(new Date());
+  }).format(now);
+  elements.date.textContent = new Intl.DateTimeFormat([], {
+    weekday: "short",
+    month: "short",
+    day: "numeric"
+  }).format(now).toUpperCase();
 }
 
 function appTypeLabel(application) {
@@ -41,7 +46,6 @@ function appTypeLabel(application) {
 function render(nextState) {
   state = nextState;
   selectedIndex = Math.min(selectedIndex, Math.max(0, state.apps.length - 1));
-  elements.deviceName.textContent = state.device?.name ?? "WatchOS";
   elements.pairingCode.textContent = state.pairingCode ?? "------";
   elements.appCount.textContent = `${state.apps.length} ${state.apps.length === 1 ? "app" : "apps"}`;
   elements.appGrid.replaceChildren();
@@ -144,6 +148,8 @@ function handleCommand(message) {
   if (message.command === "ok") launchSelected();
   if (message.command === "home") window.location.assign("/tv/");
   if (message.command === "back") history.back();
+  if (message.command === "exit") window.location.assign("/tv/");
+  if (message.command === "menu") window.location.assign("/admin/");
   if (message.command === "search") showToast("Search will be available in the next launcher build.");
 }
 
@@ -151,11 +157,6 @@ function connect() {
   clearTimeout(reconnectTimer);
   const protocol = location.protocol === "https:" ? "wss:" : "ws:";
   socket = new WebSocket(`${protocol}//${location.host}/ws?role=tv`);
-
-  socket.addEventListener("open", () => {
-    elements.connection.classList.add("online");
-    elements.connection.querySelector("span").textContent = "LAN connected";
-  });
 
   socket.addEventListener("message", ({ data }) => {
     const message = JSON.parse(data);
@@ -165,8 +166,6 @@ function connect() {
   });
 
   socket.addEventListener("close", () => {
-    elements.connection.classList.remove("online");
-    elements.connection.querySelector("span").textContent = "Reconnecting";
     reconnectTimer = setTimeout(connect, 1500);
   });
 }
@@ -196,7 +195,12 @@ document.addEventListener("keydown", (event) => {
     Enter: "ok",
     " ": "ok",
     Escape: "back",
-    Home: "home"
+    Backspace: "back",
+    Home: "home",
+    F4: "exit",
+    m: "menu",
+    M: "menu",
+    "/": "search"
   }[event.key];
   if (!command) return;
   event.preventDefault();

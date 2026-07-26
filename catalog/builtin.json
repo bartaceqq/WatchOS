@@ -84,22 +84,6 @@
       },
       "permissions": ["media", "network"],
       "removable": true
-    },
-    {
-      "id": "settings",
-      "name": "Settings",
-      "version": "1.0.0",
-      "description": "Display, audio, network, apps and system settings.",
-      "category": "System",
-      "accent": "#7d8597",
-      "icon": "⚙",
-      "launch": {
-        "type": "tvapp",
-        "target": "/admin/",
-        "fullscreen": true
-      },
-      "permissions": ["system"],
-      "removable": false
     }
   ]
 }

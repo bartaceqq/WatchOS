@@ -46,6 +46,7 @@ button {
 
 header,
 .status,
+.system-row,
 .quick-row,
 .media-row,
 .volume-row,
@@ -147,6 +148,35 @@ h1 {
 }
 
 .controls[hidden] { display: none; }
+
+.system-row {
+  gap: 10px;
+  margin-bottom: 11px;
+}
+
+.system-row button {
+  height: 66px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 18px;
+  background: linear-gradient(145deg, #171d29, #10151e);
+}
+
+.system-row strong {
+  font-size: 23px;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.system-row span {
+  color: #c4ccda;
+  font-size: 12px;
+  font-weight: 700;
+}
 
 .quick-row {
   gap: 10px;
