@@ -25,8 +25,8 @@ Open:
 - Phone remote: `http://localhost:8787/remote/`
 - App and device settings: `http://localhost:8787/admin/`
 
-The generated pairing code is visible on the TV home screen and in the local
-state API during development.
+The generated pairing code is visible under Settings > Phone remote and in the
+local state API during development.
 
 ## Bootable image
 

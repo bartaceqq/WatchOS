@@ -1,4 +1,5 @@
 import { createTvKeyboard } from "/shared/tv-keyboard.js";
+import { createSystemOverlay } from "/shared/system-overlay.js";
 
 const tokenKey = "watchos.remote.token";
 const localControl = ["127.0.0.1", "localhost", "::1", "[::1]"].includes(location.hostname);
@@ -38,6 +39,7 @@ const elements = {
 const tvKeyboard = createTvKeyboard({
   onDone: () => stopEditing(false)
 });
+const systemOverlay = createSystemOverlay();
 
 function headers() {
   return {
@@ -396,6 +398,7 @@ function cycleSelect(select, delta) {
 }
 
 function executeTvCommand(command) {
+  if (systemOverlay.handle(command)) return;
   if (command === "home" || command === "exit" || command === "menu") {
     returnToTelevision();
     return;
@@ -441,6 +444,7 @@ document.addEventListener("keydown", (event) => {
     Escape: "back",
     Backspace: "back",
     Home: "home",
+    Meta: "home",
     F4: "exit",
     m: "menu",
     M: "menu"

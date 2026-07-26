@@ -1,0 +1,78 @@
+.shared-system-overlay[hidden] { display: none !important; }
+.shared-system-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  padding: 0 34px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  color: #f7f9fd;
+  background: linear-gradient(transparent 16%, rgba(4,6,11,.34) 43%, rgba(3,5,9,.96) 100%);
+  backdrop-filter: blur(13px) saturate(.78);
+  font-family: Inter, "Segoe UI", sans-serif;
+}
+.shared-overlay-status {
+  width: min(1000px, 94vw);
+  margin-bottom: 13px;
+  padding: 0 8px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.shared-overlay-status span { color: #aa99ff; font-size: 10px; font-weight: 850; letter-spacing: .19em; }
+.shared-overlay-status strong { display: block; margin-top: 4px; font-size: 22px; letter-spacing: -.025em; }
+.shared-overlay-status time { font-size: 20px; font-weight: 750; }
+.shared-overlay-dock {
+  width: min(1000px, 94vw);
+  min-height: 112px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 30px;
+  background: rgba(18,22,32,.97);
+  box-shadow: 0 34px 100px rgba(0,0,0,.64), inset 0 1px rgba(255,255,255,.04);
+}
+.shared-overlay-dock button {
+  width: 91px;
+  height: 82px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 7px;
+  border: 2px solid transparent;
+  border-radius: 20px;
+  background: transparent;
+  color: #aab3c2;
+  font: inherit;
+}
+.shared-overlay-dock button > span { font-size: 25px; line-height: 1; }
+.shared-overlay-dock button small { font-size: 10px; font-weight: 780; }
+.shared-overlay-dock button.selected,
+.shared-overlay-dock button:focus-visible {
+  outline: 0;
+  border-color: white;
+  background: linear-gradient(145deg, #353d50, #202634);
+  color: white;
+  transform: translateY(-6px);
+  box-shadow: 0 16px 32px rgba(0,0,0,.36);
+}
+.shared-overlay-dock i { width: 1px; height: 55px; margin: 0 5px; background: rgba(255,255,255,.12); }
+.shared-overlay-hint { margin: 13px 0 0; color: #768195; font-size: 11px; }
+.shared-overlay-hint kbd {
+  min-width: 28px;
+  margin-right: 5px;
+  padding: 4px 7px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 7px;
+  background: #171c27;
+  color: #c4cad4;
+  font: 700 10px inherit;
+}

@@ -75,6 +75,7 @@ EOF
 tar -C "${SOURCE_DIR}" \
   --exclude='./artifacts' \
   --exclude='./node_modules' \
+  --exclude='./data' \
   --exclude='./.git' \
   --exclude='./image' \
   -cf - . \

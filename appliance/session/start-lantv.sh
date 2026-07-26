@@ -19,6 +19,8 @@ exec chromium \
   --no-first-run \
   --password-store=basic \
   --disable-session-crashed-bubble \
+  --hide-crash-restore-bubble \
   --disable-infobars \
   --autoplay-policy=no-user-gesture-required \
+  --class=WatchOSLauncher \
   --app=http://127.0.0.1:8787/tv/

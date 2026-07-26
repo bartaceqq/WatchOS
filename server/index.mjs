@@ -23,10 +23,12 @@ const browserExtraArguments = process.env.LANTV_DISABLE_GPU === "1"
 const remoteCommands = new Set([
   "up", "down", "left", "right", "ok", "back", "home",
   "playPause", "previous", "next", "volumeUp", "volumeDown",
-  "mute", "search", "menu", "exit"
+  "mute", "search", "menu", "exit", "resume"
 ]);
 let activeRuntimePid = null;
 let activeRuntimeKillPattern = null;
+let activeRuntimeWindowClass = null;
+let activeRuntimeAppId = null;
 
 const app = express();
 const server = http.createServer(app);
@@ -121,6 +123,10 @@ function publicState() {
     pairingRequired: true,
     pairingCode: state.pairing.code,
     remoteUrl: lanAddress ? `http://${lanAddress}:${port}/remote/` : `http://localhost:${port}/remote/`,
+    runtime: {
+      active: runtimeIsActive(),
+      appId: activeRuntimeAppId
+    },
     updatedAt: state.updatedAt
   };
 }
@@ -484,6 +490,53 @@ function runDesktopCommand(executable, argumentsList) {
   child.unref();
 }
 
+function focusLauncher() {
+  if (process.platform !== "linux") return;
+  runDesktopCommand("/usr/bin/xdotool", [
+    "search", "--onlyvisible", "--class", "WatchOSLauncher",
+    "windowactivate", "--sync"
+  ]);
+}
+
+function focusRuntime() {
+  if (process.platform !== "linux" || !runtimeIsActive()) return;
+  if (activeRuntimeWindowClass) {
+    runDesktopCommand("/usr/bin/xdotool", [
+      "search", "--onlyvisible", "--class", activeRuntimeWindowClass,
+      "windowactivate", "--sync"
+    ]);
+    return;
+  }
+  if (activeRuntimePid) {
+    runDesktopCommand("/usr/bin/xdotool", [
+      "search", "--onlyvisible", "--pid", String(activeRuntimePid),
+      "windowactivate", "--sync"
+    ]);
+  }
+}
+
+function stopActiveRuntime(announce = true) {
+  if (activeRuntimeKillPattern) {
+    const killPattern = activeRuntimeKillPattern;
+    runDesktopCommand("/usr/bin/pkill", ["--signal", "TERM", "--full", killPattern]);
+    setTimeout(() => {
+      runDesktopCommand("/usr/bin/pkill", ["--signal", "KILL", "--full", killPattern]);
+    }, 900);
+  }
+  if (activeRuntimePid) {
+    try {
+      process.kill(-activeRuntimePid, "SIGTERM");
+    } catch {
+      // The application may already be closing.
+    }
+  }
+  activeRuntimePid = null;
+  activeRuntimeKillPattern = null;
+  activeRuntimeWindowClass = null;
+  activeRuntimeAppId = null;
+  if (announce) broadcast({ type: "state", state: publicState() });
+}
+
 function handleRemoteCommand(command) {
   if (command === "volumeUp" || command === "volumeDown") {
     if (process.platform === "linux") {
@@ -503,37 +556,25 @@ function handleRemoteCommand(command) {
     return;
   }
 
-  if (process.platform !== "linux" || !runtimeIsActive()) {
+  const hasRuntime = runtimeIsActive();
+  if (command === "home") {
+    broadcast({ type: "command", command, overlay: hasRuntime }, "tv");
+    if (hasRuntime) setTimeout(focusLauncher, 120);
+    return;
+  }
+  if (command === "resume") {
+    focusRuntime();
+    return;
+  }
+  if (command === "exit") {
+    if (hasRuntime) stopActiveRuntime();
     broadcast({ type: "command", command }, "tv");
+    setTimeout(focusLauncher, 120);
     return;
   }
 
-  if (command === "home" || command === "exit") {
-    if (activeRuntimeKillPattern) {
-      const killPattern = activeRuntimeKillPattern;
-      runDesktopCommand("/usr/bin/pkill", [
-        "--signal", "TERM", "--full", killPattern
-      ]);
-      setTimeout(() => {
-        runDesktopCommand("/usr/bin/pkill", [
-          "--signal", "KILL", "--full", killPattern
-        ]);
-      }, 500);
-    }
-    try {
-      process.kill(-activeRuntimePid, "SIGTERM");
-    } catch {
-      // The application may already be closing.
-    }
-    activeRuntimePid = null;
-    activeRuntimeKillPattern = null;
+  if (process.platform !== "linux" || !hasRuntime) {
     broadcast({ type: "command", command }, "tv");
-    setTimeout(() => {
-      runDesktopCommand("/usr/bin/xdotool", [
-        "search", "--onlyvisible", "--class", "chromium",
-        "windowactivate", "--sync"
-      ]);
-    }, 400);
     return;
   }
 
@@ -579,20 +620,35 @@ function launchRuntimeApplication(application) {
     };
   }
 
+  if (runtimeIsActive() && activeRuntimeAppId === application.id) {
+    focusRuntime();
+    return {
+      ok: true,
+      mode: "resumed",
+      application: application.id
+    };
+  }
+  if (runtimeIsActive()) stopActiveRuntime(false);
+
   let executable;
   let argumentsList;
   let browserProfilePath = null;
+  let runtimeWindowClass = null;
 
   if (launch.type === "web") {
     executable = process.env.LANTV_BROWSER ?? "/usr/bin/opera";
     const browserProfile = launch.browserProfile ?? application.id;
     browserProfilePath = `/var/lib/lantv/browser-profiles/${safeSegment(browserProfile)}`;
+    runtimeWindowClass = path.basename(executable).toLowerCase().includes("opera")
+      ? "Opera"
+      : "WatchOSRuntime";
     argumentsList = [
       "--start-fullscreen",
       "--no-first-run",
       "--disable-session-crashed-bubble",
       "--hide-crash-restore-bubble",
       ...browserExtraArguments,
+      "--class=WatchOSRuntime",
       `--user-data-dir=${browserProfilePath}`,
       launch.target
     ];
@@ -614,6 +670,7 @@ function launchRuntimeApplication(application) {
   } else if (launch.type === "system" && launch.action === "browser") {
     executable = process.env.LANTV_SYSTEM_BROWSER ?? "/usr/bin/chromium";
     browserProfilePath = "/var/lib/lantv/browser-profiles/chromium";
+    runtimeWindowClass = "WatchOSBrowser";
     argumentsList = [
       "--start-fullscreen",
       "--no-first-run",
@@ -660,8 +717,16 @@ function launchRuntimeApplication(application) {
   child.unref();
   activeRuntimePid = child.pid;
   activeRuntimeKillPattern = browserProfilePath;
+  activeRuntimeWindowClass = runtimeWindowClass;
+  activeRuntimeAppId = application.id;
+  broadcast({ type: "state", state: publicState() });
   child.once("exit", () => {
-    if (activeRuntimePid === child.pid && !activeRuntimeKillPattern) activeRuntimePid = null;
+    if (activeRuntimePid === child.pid && !activeRuntimeKillPattern) {
+      activeRuntimePid = null;
+      activeRuntimeWindowClass = null;
+      activeRuntimeAppId = null;
+      broadcast({ type: "state", state: publicState() });
+    }
   });
 
   return {

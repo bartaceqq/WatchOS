@@ -1,4 +1,5 @@
 import { createTvKeyboard } from "/shared/tv-keyboard.js";
+import { createSystemOverlay } from "/shared/system-overlay.js";
 
 const form = document.querySelector("#video-form");
 const input = document.querySelector("#video-input");
@@ -16,6 +17,7 @@ const tvKeyboard = createTvKeyboard({
     input.classList.remove("tv-editing");
   }
 });
+const systemOverlay = createSystemOverlay();
 
 function parseVideoId(value) {
   const text = value.trim();
@@ -73,10 +75,7 @@ window.onYouTubeIframeAPIReady = () => {
 };
 
 function command(name) {
-  if (name === "home") {
-    location.assign("/tv/?dock=1");
-    return;
-  }
+  if (systemOverlay.handle(name)) return;
   if (name === "menu") {
     location.assign("/admin/");
     return;
@@ -176,9 +175,14 @@ function moveFocus(direction) {
 }
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Home" || event.key === "F4") {
+  if (event.key === "Home" || event.key === "Meta") {
     event.preventDefault();
     command("home");
+    return;
+  }
+  if (event.key === "F4") {
+    event.preventDefault();
+    command("exit");
     return;
   }
   if (event.key.toLowerCase() === "m") {

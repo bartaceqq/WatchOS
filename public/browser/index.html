@@ -4,23 +4,31 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#090d15">
-  <title>WatchOS Browser</title>
+  <title>New tab</title>
   <link rel="stylesheet" href="/browser/styles.css">
 </head>
 <body>
-  <main>
-    <span class="eyebrow">WATCHOS BROWSER</span>
-    <h1>Where do you want to go?</h1>
-    <form id="address-form">
-      <input id="address" inputmode="url" autocomplete="off" placeholder="Search the web or enter an address">
-      <button>Go</button>
-    </form>
-    <section class="quick-links">
-      <a href="https://www.google.com">Google</a>
-      <a href="https://www.youtube.com">YouTube</a>
-      <a href="https://www.wikipedia.org">Wikipedia</a>
+  <main class="new-tab">
+    <header>
+      <span class="eyebrow">WATCHOS BROWSER</span>
+      <time id="browser-clock">--:--</time>
+    </header>
+    <section class="welcome">
+      <h1>Ready when you are.</h1>
+      <p>Search, type an address, or choose a favorite.</p>
+      <form id="address-form">
+        <span aria-hidden="true">&#128269;</span>
+        <input id="address" aria-label="Search the web" autocomplete="off" placeholder="Search the web">
+        <button>Search</button>
+      </form>
     </section>
-    <p class="hint">Arrow keys move the pointer · Enter clicks · focus a text field for the TV keyboard · F4 exits</p>
+    <section class="quick-links" aria-label="Favorites">
+      <a href="https://www.google.com"><i>G</i><span>Google<small>Search the web</small></span></a>
+      <a href="https://www.youtube.com"><i class="youtube">&#9654;</i><span>YouTube<small>Videos and music</small></span></a>
+      <a href="https://www.wikipedia.org"><i class="wiki">W</i><span>Wikipedia<small>Free encyclopedia</small></span></a>
+      <a href="http://127.0.0.1:8787/tv/"><i class="watch">W</i><span>WatchOS<small>Return to television</small></span></a>
+    </section>
+    <footer>Arrow keys move the pointer <b>·</b> Enter clicks <b>·</b> Win opens WatchOS controls <b>·</b> F4 exits</footer>
   </main>
   <script type="module" src="/browser/app.js"></script>
 </body>

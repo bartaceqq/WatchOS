@@ -1,3 +1,5 @@
+import { createSystemOverlay } from "/shared/system-overlay.js";
+
 const elements = {
   intro: document.querySelector("#intro"),
   openFile: document.querySelector("#open-file"),
@@ -13,6 +15,7 @@ let socket;
 let reconnectTimer;
 let toastTimer;
 let mediaUrl;
+const systemOverlay = createSystemOverlay();
 
 function showToast(message) {
   clearTimeout(toastTimer);
@@ -54,8 +57,9 @@ function moveFocus(direction) {
 }
 
 function command(name) {
-  if (name === "home" || name === "back" || name === "exit") {
-    location.assign(name === "home" ? "/tv/?dock=1" : "/tv/");
+  if (systemOverlay.handle(name)) return;
+  if (name === "back" || name === "exit") {
+    location.assign("/tv/");
     return;
   }
   if (name === "menu") {
@@ -117,6 +121,7 @@ document.addEventListener("keydown", (event) => {
     Escape: "back",
     Backspace: "back",
     Home: "home",
+    Meta: "home",
     F4: "exit",
     m: "menu",
     M: "menu"

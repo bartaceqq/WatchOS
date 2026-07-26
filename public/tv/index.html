@@ -3,17 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#080b12">
+  <meta name="theme-color" content="#070a11">
   <title>WatchOS</title>
   <link rel="stylesheet" href="/tv/styles.css">
 </head>
 <body>
-  <div class="ambient ambient-one"></div>
-  <div class="ambient ambient-two"></div>
+  <div class="ambient ambient-violet"></div>
+  <div class="ambient ambient-blue"></div>
 
   <main class="shell">
     <header class="topbar">
-      <div class="topbar-actions">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">W</span>
+        <div><strong>WatchOS</strong><small id="view-label">HOME</small></div>
+      </div>
+      <div class="top-status">
+        <span class="network-state"><i></i> LAN ready</span>
         <div class="clock-card">
           <span id="date">WELCOME</span>
           <time id="clock">--:--</time>
@@ -21,43 +26,69 @@
       </div>
     </header>
 
-    <section class="hero" id="hero" aria-live="polite">
-      <div class="hero-content">
-        <div class="eyebrow" id="hero-category">YOUR APPS</div>
-        <h1 id="hero-title">Welcome home</h1>
-        <p id="hero-description">Everything on your television, controlled your way.</p>
-        <div class="hero-actions">
+    <section class="view home-view" id="home-view" aria-label="Home">
+      <section class="hero" id="hero" aria-live="polite">
+        <div class="hero-content">
+          <div class="eyebrow" id="hero-category">FEATURED</div>
+          <h1 id="hero-title">Your evening starts here</h1>
+          <p id="hero-description">Pick up an app and settle in.</p>
           <button class="primary-action" id="open-selected" type="button">
             <span class="play-icon">&#9654;</span>
             Open
           </button>
         </div>
-      </div>
-      <div class="hero-symbol" id="hero-symbol" aria-hidden="true">TV</div>
+        <div class="hero-art">
+          <span class="hero-glow"></span>
+          <span class="hero-symbol" id="hero-symbol" aria-hidden="true">W</span>
+        </div>
+      </section>
+
+      <section class="rail-section" aria-labelledby="favorites-heading">
+        <div class="section-heading">
+          <div>
+            <span class="section-kicker">QUICK START</span>
+            <h2 id="favorites-heading">Favorites</h2>
+          </div>
+          <span class="section-note">Press Down for system controls</span>
+        </div>
+        <div class="app-rail" id="home-grid" role="listbox" aria-label="Favorite applications"></div>
+      </section>
     </section>
 
-    <section class="apps-section" aria-labelledby="apps-heading">
-      <div class="section-heading">
+    <section class="view apps-view" id="apps-view" hidden aria-label="All apps">
+      <div class="apps-header">
         <div>
-          <span class="section-kicker">INSTALLED</span>
-          <h2 id="apps-heading">Apps</h2>
+          <span class="section-kicker">YOUR LIBRARY</span>
+          <h1>All apps</h1>
+          <p>Everything installed on this WatchOS device.</p>
         </div>
-        <span class="app-count" id="app-count">0 apps</span>
+        <div class="collection-stat"><strong id="app-count">0</strong><span>INSTALLED</span></div>
+      </div>
+      <div class="category-bar" aria-hidden="true">
+        <span class="active">All</span><span>Streaming</span><span>Library</span><span>Tools</span>
       </div>
       <div class="app-grid" id="app-grid" role="listbox" aria-label="Installed applications"></div>
     </section>
 
     <footer class="footer">
-      <div class="key-hint"><kbd>&larr;</kbd><kbd>&rarr;</kbd><span>Navigate</span></div>
-      <div class="key-hint"><kbd>Enter</kbd><span>Open</span></div>
-      <div class="key-hint"><kbd>Esc</kbd><span>Return</span></div>
-      <div class="key-hint"><kbd>F4</kbd><span>Exit app</span></div>
-      <div class="key-hint"><kbd>Win</kbd><span>Home dock</span></div>
+      <div><kbd>&larr;</kbd><kbd>&rarr;</kbd><span>Navigate</span></div>
+      <div><kbd>Enter</kbd><span>Open</span></div>
+      <div><kbd>Esc</kbd><span>Back</span></div>
+      <div><kbd>F4</kbd><span>Exit app</span></div>
+      <div><kbd>Win</kbd><span>System overlay</span></div>
     </footer>
   </main>
 
-  <section class="system-dock" id="system-dock" hidden aria-label="WatchOS Home dock">
+  <section class="system-overlay" id="system-dock" hidden aria-label="WatchOS system overlay">
+    <div class="overlay-status">
+      <div>
+        <span class="overlay-kicker">WATCHOS</span>
+        <strong id="overlay-title">Quick controls</strong>
+      </div>
+      <span id="overlay-clock">--:--</span>
+    </div>
     <div class="dock-rail" role="toolbar">
+      <button data-dock-action="resume" hidden><span>&#9654;</span><small>Resume</small></button>
       <button data-dock-action="home"><span>&#8962;</span><small>Home</small></button>
       <button data-dock-action="apps"><span>&#9638;</span><small>Apps</small></button>
       <button data-dock-action="browser"><span>&#9673;</span><small>Browser</small></button>
@@ -67,7 +98,9 @@
       <button data-dock-action="mute"><span>&#128263;</span><small>Mute</small></button>
       <button data-dock-action="volumeUp"><span>+</span><small>Volume</small></button>
     </div>
+    <p class="overlay-hint"><kbd>Esc</kbd> returns to the open app</p>
   </section>
+
   <div class="volume-osd" id="volume-osd" hidden>
     <span id="volume-icon">&#128266;</span>
     <div><strong id="volume-label">Volume 50</strong><i><b id="volume-level"></b></i></div>

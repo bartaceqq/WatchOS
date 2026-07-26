@@ -1,8 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "WatchOS TV Controls",
-  "version": "1.0.0",
-  "description": "Remote pointer and on-screen keyboard for the WatchOS Chromium browser.",
+  "name": "WatchOS Browser Shell",
+  "version": "2.0.0",
+  "description": "Remote-controlled tabs, pointer and on-screen keyboard for the WatchOS browser.",
+  "permissions": ["tabs"],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],

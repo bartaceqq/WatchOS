@@ -1,10 +1,18 @@
-const rows = [
+const letterRows = [
   ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
   ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
   ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
-  ["Z", "X", "C", "V", "B", "N", "M"],
-  ["SPACE", "BACKSPACE", ".", "/", "CLEAR", "DONE"]
+  ["SHIFT", "Z", "X", "C", "V", "B", "N", "M", "BACKSPACE"],
+  ["CLEAR", "@", "SPACE", ".", "/", "DONE"]
 ];
+
+const labels = {
+  SHIFT: "Shift",
+  BACKSPACE: "Backspace",
+  CLEAR: "Clear",
+  SPACE: "Space",
+  DONE: "Done"
+};
 
 export function createTvKeyboard({ onDone = () => {} } = {}) {
   const shell = document.createElement("section");
@@ -13,49 +21,54 @@ export function createTvKeyboard({ onDone = () => {} } = {}) {
   shell.setAttribute("aria-label", "On-screen keyboard");
   shell.innerHTML = `
     <div class="tv-keyboard-head">
-      <strong>TV Keyboard</strong>
-      <span>Arrows move · OK types · Back closes</span>
+      <div><strong>Keyboard</strong><span id="tv-keyboard-context">Enter text</span></div>
+      <small>ARROWS TO MOVE &nbsp;·&nbsp; ENTER TO TYPE &nbsp;·&nbsp; ESC TO CLOSE</small>
     </div>
     <div class="tv-keyboard-rows"></div>
   `;
   document.body.append(shell);
   const rowsElement = shell.querySelector(".tv-keyboard-rows");
+  const contextElement = shell.querySelector("#tv-keyboard-context");
 
-  rows.forEach((row, rowIndex) => {
+  letterRows.forEach((keys, rowIndex) => {
     const rowElement = document.createElement("div");
     rowElement.className = "tv-keyboard-row";
-    row.forEach((key, columnIndex) => {
+    keys.forEach((key, columnIndex) => {
       const keyElement = document.createElement("span");
-      keyElement.className = "tv-key";
+      keyElement.className = `tv-key tv-key-${key.toLowerCase()}`;
       keyElement.dataset.row = String(rowIndex);
       keyElement.dataset.column = String(columnIndex);
-      keyElement.textContent = {
-        SPACE: "Space",
-        BACKSPACE: "⌫",
-        CLEAR: "Clear",
-        DONE: "Done"
-      }[key] ?? key;
+      keyElement.textContent = labels[key] ?? key;
       rowElement.append(keyElement);
     });
     rowsElement.append(rowElement);
   });
 
   let target = null;
-  let row = 0;
+  let row = 1;
   let column = 0;
+  let shifted = false;
 
   function render() {
     shell.querySelectorAll(".tv-key").forEach((key) => {
       key.classList.toggle("selected",
         Number(key.dataset.row) === row && Number(key.dataset.column) === column);
+      key.classList.toggle("active", key.classList.contains("tv-key-shift") && shifted);
+      const value = letterRows[Number(key.dataset.row)][Number(key.dataset.column)];
+      if (/^[A-Z]$/.test(value)) key.textContent = shifted ? value : value.toLowerCase();
     });
   }
 
   function open(nextTarget) {
     target = nextTarget;
     shell.hidden = false;
-    row = 0;
+    contextElement.textContent = nextTarget?.getAttribute("aria-label")
+      ?? nextTarget?.closest("label")?.firstChild?.textContent?.trim()
+      ?? nextTarget?.placeholder
+      ?? "Enter text";
+    row = 1;
     column = 0;
+    shifted = false;
     render();
   }
 
@@ -73,10 +86,21 @@ export function createTvKeyboard({ onDone = () => {} } = {}) {
     target.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
+  function backspace() {
+    if (!target) return;
+    const start = target.selectionStart ?? target.value.length;
+    const end = target.selectionEnd ?? start;
+    const from = start === end ? Math.max(0, start - 1) : Math.min(start, end);
+    target.setRangeText("", from, Math.max(start, end), "end");
+    target.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
   function press() {
-    const key = rows[row][column];
-    if (key === "DONE") {
-      close(true);
+    const key = letterRows[row][column];
+    if (key === "DONE") return close(true);
+    if (key === "SHIFT") {
+      shifted = !shifted;
+      render();
       return;
     }
     if (key === "CLEAR") {
@@ -84,14 +108,15 @@ export function createTvKeyboard({ onDone = () => {} } = {}) {
       target.dispatchEvent(new Event("input", { bubbles: true }));
       return;
     }
-    if (key === "BACKSPACE") {
-      const end = target.selectionStart ?? target.value.length;
-      const start = target.selectionEnd !== end ? target.selectionEnd : Math.max(0, end - 1);
-      target.setRangeText("", Math.min(start, end), Math.max(start, end), "end");
-      target.dispatchEvent(new Event("input", { bubbles: true }));
-      return;
-    }
-    insert(key === "SPACE" ? " " : key);
+    if (key === "BACKSPACE") return backspace();
+    const value = key === "SPACE"
+      ? " "
+      : /^[A-Z]$/.test(key)
+        ? shifted ? key : key.toLowerCase()
+        : key;
+    insert(value);
+    if (shifted && /^[A-Z]$/.test(key)) shifted = false;
+    render();
   }
 
   function handle(command) {
@@ -104,9 +129,9 @@ export function createTvKeyboard({ onDone = () => {} } = {}) {
       press();
       return true;
     }
-    if (command === "up") row = (row - 1 + rows.length) % rows.length;
-    if (command === "down") row = (row + 1) % rows.length;
-    const rowLength = rows[row].length;
+    if (command === "up") row = (row - 1 + letterRows.length) % letterRows.length;
+    if (command === "down") row = (row + 1) % letterRows.length;
+    const rowLength = letterRows[row].length;
     if (command === "left") column = (column - 1 + rowLength) % rowLength;
     if (command === "right") column = (column + 1) % rowLength;
     column = Math.min(column, rowLength - 1);

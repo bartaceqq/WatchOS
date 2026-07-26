@@ -1,35 +1,50 @@
-.tv-keyboard-shell[hidden] { display: none; }
+.tv-keyboard-shell[hidden] { display: none !important; }
 .tv-keyboard-shell {
   position: fixed;
   left: 50%;
-  bottom: 18px;
+  bottom: 16px;
   z-index: 100;
-  width: min(1060px, 96vw);
-  padding: 17px 20px 20px;
+  width: min(1040px, 96vw);
+  padding: 16px 22px 20px;
   border: 1px solid rgba(255,255,255,.16);
-  border-radius: 27px;
-  background: rgba(16,21,31,.98);
-  box-shadow: 0 30px 100px rgba(0,0,0,.68);
+  border-radius: 26px;
+  background: rgba(13,17,25,.985);
+  box-shadow: 0 32px 110px rgba(0,0,0,.72), inset 0 1px rgba(255,255,255,.04);
   transform: translateX(-50%);
+  font-family: Inter, "Segoe UI", sans-serif;
 }
-.tv-keyboard-head { display: flex; justify-content: space-between; padding: 0 7px 9px; color: #fff; }
+.tv-keyboard-head {
+  min-height: 40px;
+  padding: 0 7px 9px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.tv-keyboard-head > div { display: flex; align-items: baseline; gap: 12px; }
+.tv-keyboard-head strong { color: white; font-size: 17px; }
 .tv-keyboard-head span { color: #8f9bad; font-size: 12px; }
-.tv-keyboard-row { display: flex; justify-content: center; gap: 8px; margin: 7px 0; }
+.tv-keyboard-head small { color: #6f7a8d; font-size: 9px; font-weight: 800; letter-spacing: .11em; }
+.tv-keyboard-row { display: flex; justify-content: center; gap: 7px; margin: 6px 0; }
 .tv-key {
-  min-width: 62px;
-  height: 50px;
-  padding: 0 13px;
+  min-width: 63px;
+  height: 47px;
+  padding: 0 12px;
   display: grid;
   place-items: center;
   border: 2px solid transparent;
-  border-radius: 12px;
-  background: #252d3b;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 750;
+  border-radius: 10px;
+  background: linear-gradient(#2b3341, #242b38);
+  color: #f7f8fb;
+  box-shadow: inset 0 1px rgba(255,255,255,.06), 0 3px 0 #171c25;
+  font-size: 14px;
+  font-weight: 740;
 }
+.tv-key-shift, .tv-key-backspace, .tv-key-clear, .tv-key-done { min-width: 104px; }
+.tv-key-space { min-width: 350px; }
+.tv-key.active { background: #50438b; }
 .tv-key.selected {
   border-color: white;
-  background: #7c5cff;
+  background: #7760f3;
   transform: translateY(-3px);
+  box-shadow: 0 9px 22px rgba(83,63,190,.36);
 }

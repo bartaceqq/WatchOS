@@ -1,16 +1,23 @@
 const elements = {
   clock: document.querySelector("#clock"),
   date: document.querySelector("#date"),
+  overlayClock: document.querySelector("#overlay-clock"),
+  viewLabel: document.querySelector("#view-label"),
+  homeView: document.querySelector("#home-view"),
+  appsView: document.querySelector("#apps-view"),
   hero: document.querySelector("#hero"),
   heroCategory: document.querySelector("#hero-category"),
   heroTitle: document.querySelector("#hero-title"),
   heroDescription: document.querySelector("#hero-description"),
   heroSymbol: document.querySelector("#hero-symbol"),
   openSelected: document.querySelector("#open-selected"),
+  homeGrid: document.querySelector("#home-grid"),
   appGrid: document.querySelector("#app-grid"),
   appCount: document.querySelector("#app-count"),
   systemDock: document.querySelector("#system-dock"),
+  overlayTitle: document.querySelector("#overlay-title"),
   dockItems: [...document.querySelectorAll("[data-dock-action]")],
+  resumeDockItem: document.querySelector("[data-dock-action=resume]"),
   volumeOsd: document.querySelector("#volume-osd"),
   volumeIcon: document.querySelector("#volume-icon"),
   volumeLabel: document.querySelector("#volume-label"),
@@ -18,22 +25,23 @@ const elements = {
   toast: document.querySelector("#toast")
 };
 
-let state = { apps: [], favorites: [] };
-let selectedIndex = 0;
+let state = { apps: [], favorites: [], runtime: { active: false, appId: null } };
+let activeView = new URLSearchParams(location.search).get("view") === "apps" ? "apps" : "home";
+let selectedAppId = null;
+let dockIndex = 0;
+let dockIsRuntimeOverlay = false;
 let socket;
 let reconnectTimer;
 let toastTimer;
 let volumeTimer;
 let volumeLevel = 50;
 let muted = false;
-let dockIndex = 0;
 
 function updateClock() {
   const now = new Date();
-  elements.clock.textContent = new Intl.DateTimeFormat([], {
-    hour: "2-digit",
-    minute: "2-digit"
-  }).format(now);
+  const time = new Intl.DateTimeFormat([], { hour: "2-digit", minute: "2-digit" }).format(now);
+  elements.clock.textContent = time;
+  elements.overlayClock.textContent = time;
   elements.date.textContent = new Intl.DateTimeFormat([], {
     weekday: "short",
     month: "short",
@@ -52,80 +60,139 @@ function appTypeLabel(application) {
   }[application.launch.type] ?? application.launch.type;
 }
 
-function render(nextState) {
-  state = nextState;
-  selectedIndex = Math.min(selectedIndex, Math.max(0, state.apps.length - 1));
-  elements.appCount.textContent = `${state.apps.length} ${state.apps.length === 1 ? "app" : "apps"}`;
-  elements.appGrid.replaceChildren();
-
-  state.apps.forEach((application, index) => {
-    const card = document.createElement("button");
-    card.className = "app-card";
-    card.type = "button";
-    card.role = "option";
-    card.dataset.index = String(index);
-    card.style.setProperty("--app-accent", application.accent ?? "#5865f2");
-    card.innerHTML = `
-      <span class="app-icon" aria-hidden="true">${escapeHtml(application.icon)}</span>
-      <span class="app-name">${escapeHtml(application.name)}</span>
-      <span class="app-type">${escapeHtml(appTypeLabel(application))}</span>
-    `;
-    card.addEventListener("click", () => {
-      select(index);
-      launchSelected();
-    });
-    card.addEventListener("focus", () => select(index, false));
-    elements.appGrid.append(card);
-  });
-
-  select(selectedIndex, false);
+function favoriteApps() {
+  const favorites = state.favorites
+    .map((id) => state.apps.find((application) => application.id === id))
+    .filter(Boolean);
+  return favorites.length ? favorites.slice(0, 5) : state.apps.slice(0, 5);
 }
 
-function select(index, focus = true) {
-  if (!state.apps.length) return;
-  selectedIndex = (index + state.apps.length) % state.apps.length;
-  const selected = state.apps[selectedIndex];
+function appsForView(view = activeView) {
+  return view === "home" ? favoriteApps() : state.apps;
+}
 
-  for (const card of elements.appGrid.children) {
-    const active = Number(card.dataset.index) === selectedIndex;
-    card.classList.toggle("selected", active);
-    card.setAttribute("aria-selected", String(active));
-    if (active && focus) card.focus({ preventScroll: true });
+function selectedApplication() {
+  return state.apps.find((application) => application.id === selectedAppId)
+    ?? appsForView()[0]
+    ?? null;
+}
+
+function createCard(application) {
+  const card = document.createElement("button");
+  card.className = "app-card";
+  card.type = "button";
+  card.role = "option";
+  card.dataset.appId = application.id;
+  card.style.setProperty("--app-accent", application.accent ?? "#5865f2");
+  card.innerHTML = `
+    <span class="app-icon" aria-hidden="true">${escapeHtml(application.icon)}</span>
+    <span class="app-name">${escapeHtml(application.name)}</span>
+    <span class="app-type">${escapeHtml(appTypeLabel(application))}</span>
+  `;
+  card.addEventListener("focus", () => selectApp(application.id, false));
+  card.addEventListener("click", () => {
+    selectApp(application.id, false);
+    launchSelected();
+  });
+  return card;
+}
+
+function render(nextState) {
+  state = nextState;
+  const available = appsForView();
+  if (!available.some((application) => application.id === selectedAppId)) {
+    selectedAppId = available[0]?.id ?? state.apps[0]?.id ?? null;
   }
 
-  elements.hero.style.setProperty("--hero-accent", selected.accent ?? "#7c5cff");
-  elements.heroCategory.textContent = selected.category?.toUpperCase() ?? "APPLICATION";
-  elements.heroTitle.textContent = selected.name;
-  elements.heroDescription.textContent = selected.description || "Open application";
-  elements.heroSymbol.textContent = selected.icon;
+  elements.homeGrid.replaceChildren(...favoriteApps().map(createCard));
+  elements.appGrid.replaceChildren(...state.apps.map(createCard));
+  elements.appCount.textContent = String(state.apps.length);
+  elements.resumeDockItem.hidden = !state.runtime?.active;
+  renderView();
+  selectApp(selectedAppId, false);
+}
+
+function activeGrid() {
+  return activeView === "home" ? elements.homeGrid : elements.appGrid;
+}
+
+function renderView() {
+  elements.homeView.hidden = activeView !== "home";
+  elements.appsView.hidden = activeView !== "apps";
+  elements.viewLabel.textContent = activeView.toUpperCase();
+}
+
+function setView(view, focus = true) {
+  activeView = view === "apps" ? "apps" : "home";
+  const available = appsForView();
+  if (!available.some((application) => application.id === selectedAppId)) {
+    selectedAppId = available[0]?.id ?? null;
+  }
+  renderView();
+  selectApp(selectedAppId, focus);
+}
+
+function selectApp(appId, focus = true) {
+  const application = state.apps.find((item) => item.id === appId);
+  if (!application) return;
+  selectedAppId = application.id;
+
+  for (const grid of [elements.homeGrid, elements.appGrid]) {
+    for (const card of grid.children) {
+      const active = card.dataset.appId === selectedAppId;
+      card.classList.toggle("selected", active);
+      card.setAttribute("aria-selected", String(active));
+    }
+  }
+
+  const card = [...activeGrid().children].find((item) => item.dataset.appId === selectedAppId);
+  if (focus) card?.focus({ preventScroll: true });
+
+  elements.hero.style.setProperty("--hero-accent", application.accent ?? "#7c5cff");
+  elements.heroCategory.textContent = application.category?.toUpperCase() ?? "FEATURED";
+  elements.heroTitle.textContent = application.name;
+  elements.heroDescription.textContent = application.description || "Open application";
+  elements.heroSymbol.textContent = application.icon;
 }
 
 function move(direction) {
   if (!elements.systemDock.hidden) {
     if (direction === "left") selectDock(dockIndex - 1);
     if (direction === "right") selectDock(dockIndex + 1);
-    if (direction === "up") closeDock();
+    if (direction === "up") dismissDock();
     return;
   }
-  const columns = getComputedStyle(elements.appGrid).gridTemplateColumns.split(" ").length;
-  if (direction === "left") select(selectedIndex - 1);
-  if (direction === "right") select(selectedIndex + 1);
-  if (direction === "up") select(selectedIndex - columns);
-  if (direction === "down") showDock();
+
+  const available = appsForView();
+  if (!available.length) return;
+  const current = Math.max(0, available.findIndex((application) => application.id === selectedAppId));
+  const columns = activeView === "home"
+    ? available.length
+    : Math.max(1, getComputedStyle(elements.appGrid).gridTemplateColumns.split(" ").length);
+  let next = current;
+  if (direction === "left") next = Math.max(0, current - 1);
+  if (direction === "right") next = Math.min(available.length - 1, current + 1);
+  if (direction === "up") next = Math.max(0, current - columns);
+  if (direction === "down") {
+    const candidate = current + columns;
+    if (activeView === "home" || candidate >= available.length) {
+      showDock(activeView, false);
+      return;
+    }
+    next = candidate;
+  }
+  selectApp(available[next].id);
 }
 
 async function launchSelected() {
-  const application = state.apps[selectedIndex];
-  if (!application) return;
-  await launch(application);
+  const application = selectedApplication();
+  if (application) await launch(application);
 }
 
 async function launch(application) {
-  const launch = application.launch;
   showToast(`Opening ${application.name}…`);
-
-  if (launch.type === "tvapp") {
-    window.location.assign(launch.target);
+  if (application.launch.type === "tvapp") {
+    location.assign(application.launch.target);
     return;
   }
 
@@ -137,29 +204,43 @@ async function launch(application) {
     showToast(result.error ?? `Could not open ${application.name}.`);
     return;
   }
-  if (result.mode === "simulated") {
-    showToast(result.message);
-  }
+  if (result.mode === "simulated") showToast(result.message);
+}
+
+function visibleDockItems() {
+  return elements.dockItems.filter((item) => !item.hidden);
 }
 
 function selectDock(index) {
-  dockIndex = (index + elements.dockItems.length) % elements.dockItems.length;
-  elements.dockItems.forEach((item, itemIndex) => {
-    item.classList.toggle("selected", itemIndex === dockIndex);
-  });
-  elements.dockItems[dockIndex]?.focus({ preventScroll: true });
+  const items = visibleDockItems();
+  if (!items.length) return;
+  dockIndex = (index + items.length) % items.length;
+  elements.dockItems.forEach((item) => item.classList.remove("selected"));
+  items[dockIndex].classList.add("selected");
+  items[dockIndex].focus({ preventScroll: true });
 }
 
-function showDock(action = "home") {
+function showDock(action = "home", runtimeOverlay = false) {
+  dockIsRuntimeOverlay = Boolean(runtimeOverlay && state.runtime?.active);
   elements.systemDock.hidden = false;
-  const preferred = elements.dockItems.findIndex((item) => item.dataset.dockAction === action);
+  elements.resumeDockItem.hidden = !state.runtime?.active;
+  elements.overlayTitle.textContent = dockIsRuntimeOverlay ? "App paused underneath" : "Quick controls";
+  const items = visibleDockItems();
+  const preferred = items.findIndex((item) => item.dataset.dockAction === (dockIsRuntimeOverlay ? "resume" : action));
   selectDock(preferred >= 0 ? preferred : 0);
 }
 
 function closeDock() {
   elements.systemDock.hidden = true;
   elements.dockItems.forEach((item) => item.classList.remove("selected"));
-  select(selectedIndex);
+  selectApp(selectedAppId);
+}
+
+async function dismissDock() {
+  const shouldResume = dockIsRuntimeOverlay && state.runtime?.active;
+  dockIsRuntimeOverlay = false;
+  closeDock();
+  if (shouldResume) await sendSystemCommand("resume");
 }
 
 async function sendSystemCommand(command) {
@@ -185,17 +266,27 @@ function showVolume(command) {
 }
 
 async function activateDockItem() {
-  const action = elements.dockItems[dockIndex]?.dataset.dockAction;
-  if (action === "home" || action === "apps") {
+  const action = visibleDockItems()[dockIndex]?.dataset.dockAction;
+  if (!action) return;
+  if (action === "resume") {
+    dockIsRuntimeOverlay = false;
     closeDock();
-    document.querySelector(".apps-section")?.scrollIntoView({ block: "nearest" });
+    await sendSystemCommand("resume");
+    return;
+  }
+  if (action === "home" || action === "apps") {
+    dockIsRuntimeOverlay = false;
+    closeDock();
+    setView(action);
     return;
   }
   if (action === "settings") {
-    window.location.assign("/admin/");
+    dockIsRuntimeOverlay = false;
+    location.assign("/admin/");
     return;
   }
   if (action === "browser") {
+    dockIsRuntimeOverlay = false;
     const browserApp = state.apps.find((application) => application.id === "browser");
     if (browserApp) await launch(browserApp);
     return;
@@ -207,45 +298,44 @@ async function activateDockItem() {
 
 function handleCommand(message) {
   if (message.command === "launch" && message.appId) {
-    const index = state.apps.findIndex((item) => item.id === message.appId);
-    if (index >= 0) {
-      select(index);
+    const application = state.apps.find((item) => item.id === message.appId);
+    if (application) {
+      selectApp(application.id);
       launchSelected();
     }
     return;
   }
 
-  const keyMap = {
-    up: "up",
-    down: "down",
-    left: "left",
-    right: "right"
-  };
-  if (keyMap[message.command]) move(keyMap[message.command]);
+  if (["up", "down", "left", "right"].includes(message.command)) move(message.command);
   if (message.command === "ok") {
     if (elements.systemDock.hidden) launchSelected();
     else activateDockItem();
   }
-  if (message.command === "home") showDock("home");
-  if (message.command === "back") history.back();
-  if (message.command === "exit") window.location.assign("/tv/");
-  if (message.command === "menu") showDock("settings");
+  if (message.command === "home") showDock(activeView, message.overlay);
+  if (message.command === "back") {
+    if (!elements.systemDock.hidden) dismissDock();
+    else if (activeView === "apps") setView("home");
+  }
+  if (message.command === "exit") {
+    dockIsRuntimeOverlay = false;
+    closeDock();
+    setView("home");
+  }
+  if (message.command === "menu") showDock("settings", false);
   if (["volumeDown", "volumeUp", "mute"].includes(message.command)) showVolume(message.command);
-  if (message.command === "search") showToast("Search will be available in the next launcher build.");
+  if (message.command === "search") showToast("Open Browser to search the web.");
 }
 
 function connect() {
   clearTimeout(reconnectTimer);
   const protocol = location.protocol === "https:" ? "wss:" : "ws:";
   socket = new WebSocket(`${protocol}//${location.host}/ws?role=tv`);
-
   socket.addEventListener("message", ({ data }) => {
     const message = JSON.parse(data);
     if (message.state) render(message.state);
     if (message.type === "command") handleCommand(message);
     if (message.type === "text" && message.text) showToast(`Phone typed: ${message.text}`);
   });
-
   socket.addEventListener("close", () => {
     reconnectTimer = setTimeout(connect, 1500);
   });
@@ -286,25 +376,27 @@ document.addEventListener("keydown", (event) => {
   }[event.key];
   if (!command) return;
   event.preventDefault();
-  if (command === "back" && !elements.systemDock.hidden) {
-    closeDock();
-    return;
-  }
-  handleCommand({ command });
+  handleCommand({ command, overlay: command === "home" && state.runtime?.active });
 });
 
 elements.openSelected.addEventListener("click", launchSelected);
-elements.dockItems.forEach((item, index) => {
-  item.addEventListener("focus", () => selectDock(index));
+elements.dockItems.forEach((item) => {
+  item.addEventListener("focus", () => {
+    const index = visibleDockItems().indexOf(item);
+    if (index >= 0) selectDock(index);
+  });
   item.addEventListener("click", () => {
-    dockIndex = index;
+    const index = visibleDockItems().indexOf(item);
+    if (index >= 0) dockIndex = index;
     activateDockItem();
   });
 });
+
 updateClock();
 setInterval(updateClock, 15_000);
 fetch("/api/state").then((response) => response.json()).then((nextState) => {
   render(nextState);
-  if (new URLSearchParams(location.search).get("dock") === "1") showDock();
+  const params = new URLSearchParams(location.search);
+  if (params.get("dock") === "1") showDock(activeView, false);
 });
 connect();
