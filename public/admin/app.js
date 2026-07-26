@@ -229,6 +229,71 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function visibleControls() {
+  return [...document.querySelectorAll(
+    "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])"
+  )].filter((control) => {
+    const style = getComputedStyle(control);
+    const bounds = control.getBoundingClientRect();
+    return !control.hidden
+      && style.display !== "none"
+      && style.visibility !== "hidden"
+      && bounds.width > 0
+      && bounds.height > 0;
+  });
+}
+
+function moveFocus(direction) {
+  const controls = visibleControls();
+  if (!controls.length) return;
+
+  const current = controls.includes(document.activeElement)
+    ? document.activeElement
+    : controls[0];
+  const currentBounds = current.getBoundingClientRect();
+  const originX = currentBounds.left + currentBounds.width / 2;
+  const originY = currentBounds.top + currentBounds.height / 2;
+  const vertical = direction === "ArrowUp" || direction === "ArrowDown";
+  const positive = direction === "ArrowDown" || direction === "ArrowRight";
+
+  const candidates = controls
+    .filter((control) => control !== current)
+    .map((control) => {
+      const bounds = control.getBoundingClientRect();
+      const x = bounds.left + bounds.width / 2;
+      const y = bounds.top + bounds.height / 2;
+      const primary = vertical ? y - originY : x - originX;
+      const cross = vertical ? x - originX : y - originY;
+      return { control, primary, score: Math.abs(primary) + Math.abs(cross) * 2.5 };
+    })
+    .filter(({ primary }) => positive ? primary > 4 : primary < -4)
+    .sort((a, b) => a.score - b.score);
+
+  (candidates[0]?.control ?? current).focus({ preventScroll: true });
+  document.activeElement.scrollIntoView({ block: "nearest", inline: "nearest" });
+}
+
+function returnToTelevision() {
+  location.assign("/tv/");
+}
+
+document.addEventListener("keydown", (event) => {
+  const editing = event.target.matches("input, textarea, select");
+
+  if (event.key === "Home" || (!editing && (event.key === "Escape"
+    || event.key === "Backspace"
+    || event.key.toLowerCase() === "m"))) {
+    event.preventDefault();
+    returnToTelevision();
+    return;
+  }
+
+  if (!editing && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
+    event.preventDefault();
+    moveFocus(event.key);
+  }
+});
+
 document.querySelectorAll("nav button").forEach((button) => {
   button.addEventListener("click", () => {
     document.querySelectorAll("nav button").forEach((item) => item.classList.toggle("active", item === button));
@@ -266,4 +331,6 @@ fetch("/api/health")
   .catch(() => { elements.healthStatus.textContent = "Unavailable"; });
 
 setAuthorized(Boolean(token));
-refresh();
+refresh().then(() => {
+  document.querySelector("nav button.active")?.focus();
+});
