@@ -37,7 +37,10 @@ app.use((request, response, next) => {
 });
 app.use(express.static(publicDir, {
   extensions: ["html"],
-  maxAge: process.env.NODE_ENV === "production" ? "10m" : 0
+  maxAge: 0,
+  setHeaders(response) {
+    response.setHeader("Cache-Control", "no-store");
+  }
 }));
 
 const builtinCatalog = JSON.parse(await fs.readFile(catalogPath, "utf8"));
