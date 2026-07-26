@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://watchos.local/schema/tvapp.schema.json",
+  "title": "WatchOS application manifest",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "version",
+    "description",
+    "category",
+    "icon",
+    "accent",
+    "launch"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{1,63}$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(?:[-+][a-zA-Z0-9.-]+)?$"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 240
+    },
+    "category": {
+      "type": "string",
+      "maxLength": 32
+    },
+    "icon": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "accent": {
+      "type": "string",
+      "pattern": "^#[0-9a-fA-F]{6}$"
+    },
+    "launch": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "enum": ["tvapp", "web", "native", "flatpak", "appimage", "system"]
+        },
+        "target": {
+          "type": "string",
+          "maxLength": 2048
+        },
+        "action": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "browserProfile": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "fullscreen": {
+          "type": "boolean",
+          "default": true
+        },
+        "linux": {
+          "type": "object",
+          "required": ["executable", "arguments"],
+          "properties": {
+            "executable": {
+              "type": "string",
+              "pattern": "^/[a-zA-Z0-9._/+ -]+$"
+            },
+            "arguments": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 512
+              },
+              "maxItems": 32
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": true
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "network",
+          "drm",
+          "media",
+          "microphone",
+          "storage",
+          "system"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "removable": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "additionalProperties": true
+}

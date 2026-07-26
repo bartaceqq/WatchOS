@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "apps": [
+    {
+      "id": "youtube",
+      "name": "YouTube",
+      "version": "0.1.0",
+      "description": "Remote-first YouTube interface using the official player API.",
+      "category": "Streaming",
+      "accent": "#ff334f",
+      "icon": "▶",
+      "launch": {
+        "type": "tvapp",
+        "target": "/apps/youtube/",
+        "fullscreen": true
+      },
+      "permissions": ["network"],
+      "removable": false
+    },
+    {
+      "id": "netflix",
+      "name": "Netflix",
+      "version": "1.0.0",
+      "description": "Netflix through a supported DRM-capable browser.",
+      "category": "Streaming",
+      "accent": "#e50914",
+      "icon": "N",
+      "launch": {
+        "type": "web",
+        "target": "https://www.netflix.com/browse",
+        "browserProfile": "netflix",
+        "fullscreen": true
+      },
+      "permissions": ["network", "drm"],
+      "removable": false
+    },
+    {
+      "id": "jellyfin",
+      "name": "Jellyfin",
+      "version": "1.0.0",
+      "description": "Movies and series from the basement media server.",
+      "category": "Library",
+      "accent": "#9b5de5",
+      "icon": "◆",
+      "launch": {
+        "type": "web",
+        "target": "http://jellyfin.local:8096",
+        "fullscreen": true
+      },
+      "permissions": ["network"],
+      "removable": true
+    },
+    {
+      "id": "browser",
+      "name": "Browser",
+      "version": "1.0.0",
+      "description": "Full browser with phone keyboard support.",
+      "category": "Tools",
+      "accent": "#2ec4b6",
+      "icon": "◎",
+      "launch": {
+        "type": "system",
+        "action": "browser",
+        "fullscreen": true
+      },
+      "permissions": ["network"],
+      "removable": false
+    },
+    {
+      "id": "media",
+      "name": "LAN Media",
+      "version": "0.1.0",
+      "description": "Native player for local files and network shares.",
+      "category": "Library",
+      "accent": "#3a86ff",
+      "icon": "▸",
+      "launch": {
+        "type": "native",
+        "linux": {
+          "executable": "/usr/bin/lantv-media",
+          "arguments": []
+        },
+        "fullscreen": true
+      },
+      "permissions": ["media", "network"],
+      "removable": true
+    },
+    {
+      "id": "settings",
+      "name": "Settings",
+      "version": "1.0.0",
+      "description": "Display, audio, network, apps and system settings.",
+      "category": "System",
+      "accent": "#7d8597",
+      "icon": "⚙",
+      "launch": {
+        "type": "tvapp",
+        "target": "/admin/",
+        "fullscreen": true
+      },
+      "permissions": ["system"],
+      "removable": false
+    }
+  ]
+}

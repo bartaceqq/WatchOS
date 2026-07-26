@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0e15">
+  <title>WatchOS Settings</title>
+  <link rel="stylesheet" href="/admin/styles.css">
+</head>
+<body>
+  <main class="layout">
+    <aside>
+      <a class="brand" href="/tv/"><span>▥</span> WatchOS</a>
+      <nav>
+        <button class="active" data-section="applications">Applications</button>
+        <button data-section="device">Device</button>
+        <button data-section="connection">Connection</button>
+      </nav>
+      <a class="back-link" href="/tv/">← Back to television</a>
+    </aside>
+
+    <section class="content">
+      <header>
+        <div>
+          <span class="eyebrow">CONTROL CENTER</span>
+          <h1>Settings</h1>
+        </div>
+        <span class="connection-state" id="connection-state">LAN service</span>
+      </header>
+
+      <div class="auth-banner" id="auth-banner">
+        <div>
+          <strong>Pair to make changes</strong>
+          <span>Enter the six-digit code displayed on the TV.</span>
+        </div>
+        <form id="auth-form">
+          <input id="auth-code" inputmode="numeric" maxlength="6" placeholder="000000" aria-label="Pairing code">
+          <button>Pair</button>
+        </form>
+      </div>
+
+      <section class="page active" id="applications">
+        <div class="page-heading">
+          <div>
+            <h2>Applications</h2>
+            <p>Install web, native, Flatpak, AppImage and custom TV applications.</p>
+          </div>
+          <div class="heading-actions">
+            <button class="secondary" id="show-catalog">LAN catalog</button>
+            <button class="primary" id="show-add-app">+ Add application</button>
+          </div>
+        </div>
+
+        <section class="catalog-panel" id="catalog-panel" hidden>
+          <div class="form-title">
+            <div>
+              <span class="eyebrow">LOCAL REPOSITORY</span>
+              <h3>Browse LAN applications</h3>
+            </div>
+            <button type="button" class="icon-button" id="close-catalog">×</button>
+          </div>
+          <form id="catalog-form">
+            <input id="catalog-url" placeholder="http://server:8788/catalog.json">
+            <button class="primary">Load catalog</button>
+          </form>
+          <p class="form-message" id="catalog-message"></p>
+          <div class="catalog-grid" id="catalog-grid"></div>
+        </section>
+
+        <form class="app-form" id="app-form" hidden>
+          <div class="form-title">
+            <div>
+              <span class="eyebrow">NEW PACKAGE</span>
+              <h3>Add an application</h3>
+            </div>
+            <button type="button" class="icon-button" id="close-app-form">×</button>
+          </div>
+          <div class="field-grid">
+            <label>
+              Name
+              <input name="name" required maxlength="48" placeholder="My application">
+            </label>
+            <label>
+              Application ID
+              <input name="id" required pattern="[a-z0-9][a-z0-9._-]{1,63}" placeholder="my-app">
+            </label>
+            <label>
+              Type
+              <select name="type">
+                <option value="tvapp">Custom TV app</option>
+                <option value="web">Website/service</option>
+                <option value="native">Native executable</option>
+                <option value="flatpak">Flatpak</option>
+                <option value="appimage">AppImage</option>
+              </select>
+            </label>
+            <label>
+              Category
+              <input name="category" value="Other" maxlength="32">
+            </label>
+            <label class="wide">
+              URL, executable path or package ID
+              <input name="target" required placeholder="https://example.com or /usr/bin/app">
+            </label>
+            <label>
+              Icon or symbol
+              <input name="icon" value="◆" maxlength="64">
+            </label>
+            <label>
+              Accent
+              <input name="accent" type="color" value="#5865f2">
+            </label>
+            <label class="wide">
+              Description
+              <textarea name="description" maxlength="240" placeholder="What this application does"></textarea>
+            </label>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="secondary" id="cancel-app-form">Cancel</button>
+            <button class="primary" type="submit">Install application</button>
+          </div>
+          <p class="form-message" id="app-form-message"></p>
+        </form>
+
+        <div class="app-table" id="app-table"></div>
+      </section>
+
+      <section class="page" id="device">
+        <div class="page-heading">
+          <div>
+            <h2>Device</h2>
+            <p>Configure how this television appears on the network.</p>
+          </div>
+        </div>
+        <form class="settings-card" id="device-form">
+          <label>
+            Device name
+            <input name="name" placeholder="Living Room TV">
+          </label>
+          <label>
+            Theme
+            <select name="theme">
+              <option value="midnight">Midnight</option>
+              <option value="graphite">Graphite</option>
+              <option value="cinema">Cinema</option>
+            </select>
+          </label>
+          <label>
+            Jellyfin server
+            <input name="jellyfinUrl" placeholder="http://server:8096">
+          </label>
+          <label>
+            Catalog server
+            <input name="serverUrl" placeholder="http://server:8788">
+          </label>
+          <button class="primary">Save device settings</button>
+          <p class="form-message" id="device-message"></p>
+        </form>
+      </section>
+
+      <section class="page" id="connection">
+        <div class="page-heading">
+          <div>
+            <h2>Connection</h2>
+            <p>Addresses for phones, computers and the basement server.</p>
+          </div>
+        </div>
+        <div class="settings-card connection-card">
+          <span>Phone remote</span>
+          <code id="remote-address"></code>
+          <span>TV interface</span>
+          <code id="tv-address"></code>
+          <span>Service health</span>
+          <code id="health-status">Checking…</code>
+        </div>
+      </section>
+    </section>
+  </main>
+  <div class="toast" id="toast"></div>
+  <script type="module" src="/admin/app.js"></script>
+</body>
+</html>

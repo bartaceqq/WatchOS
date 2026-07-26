@@ -1,0 +1,21 @@
+{
+  "name": "watchos-tv",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "WatchOS configurable LAN-first television platform and phone remote",
+  "scripts": {
+    "start": "node server/index.mjs",
+    "repository": "node repository/server.mjs",
+    "dev": "node --watch server/index.mjs",
+    "check": "node --check server/index.mjs && node --check repository/server.mjs && node --check public/tv/app.js && node --check public/remote/app.js && node --check public/admin/app.js && node --check public/apps/youtube/app.js",
+    "test:smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "ws": "^8.18.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

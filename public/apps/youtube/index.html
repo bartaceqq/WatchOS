@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0a0a0c">
+  <title>YouTube · WatchOS</title>
+  <link rel="stylesheet" href="/apps/youtube/styles.css">
+</head>
+<body>
+  <header>
+    <a href="/tv/" class="home">← <span>WatchOS</span></a>
+    <div class="youtube-brand"><span>▶</span> YouTube</div>
+    <form id="video-form">
+      <input id="video-input" placeholder="Paste a YouTube link or video ID" autocomplete="off">
+      <button>Play</button>
+    </form>
+    <span class="api-badge">OFFICIAL PLAYER API</span>
+  </header>
+
+  <main>
+    <section class="intro" id="intro">
+      <span class="eyebrow">CUSTOM TV CLIENT</span>
+      <h1>YouTube built for your remote.</h1>
+      <p>Paste a video link now. Search, subscriptions and recommendations become available after connecting a YouTube Data API key in Settings.</p>
+      <div class="actions">
+        <button id="focus-input">Enter video link</button>
+        <a href="/admin/">Configure API</a>
+      </div>
+    </section>
+    <section class="player-shell" id="player-shell" hidden>
+      <div id="player"></div>
+    </section>
+    <section class="features">
+      <article><span>01</span><strong>Remote navigation</strong><p>All controls map to the phone and television remote.</p></article>
+      <article><span>02</span><strong>Official playback</strong><p>YouTube remains responsible for streams, accounts and advertisements.</p></article>
+      <article><span>03</span><strong>Custom discovery</strong><p>Our own Full HD browsing interface uses the YouTube Data API.</p></article>
+    </section>
+  </main>
+  <div class="toast" id="toast"></div>
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script type="module" src="/apps/youtube/app.js"></script>
+</body>
+</html>

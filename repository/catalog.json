@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "name": "WatchOS Home Repository",
+  "version": "2026.07.1",
+  "apps": [
+    {
+      "id": "spotify",
+      "name": "Spotify",
+      "version": "1.0.0",
+      "description": "Music and podcasts through Spotify's web player.",
+      "category": "Music",
+      "accent": "#1db954",
+      "icon": "♪",
+      "launch": {
+        "type": "web",
+        "target": "https://open.spotify.com/",
+        "browserProfile": "spotify",
+        "fullscreen": true
+      },
+      "permissions": ["network", "drm"],
+      "removable": true
+    },
+    {
+      "id": "twitch",
+      "name": "Twitch",
+      "version": "1.0.0",
+      "description": "Live streams, categories and followed channels.",
+      "category": "Streaming",
+      "accent": "#9146ff",
+      "icon": "◩",
+      "launch": {
+        "type": "web",
+        "target": "https://www.twitch.tv/",
+        "browserProfile": "twitch",
+        "fullscreen": true
+      },
+      "permissions": ["network"],
+      "removable": true
+    },
+    {
+      "id": "vlc",
+      "name": "VLC",
+      "version": "1.0.0",
+      "description": "Native media player installed and updated through Flatpak.",
+      "category": "Library",
+      "accent": "#ff8c1a",
+      "icon": "△",
+      "launch": {
+        "type": "flatpak",
+        "target": "org.videolan.VLC",
+        "flatpakId": "org.videolan.VLC",
+        "fullscreen": true
+      },
+      "permissions": ["media", "network", "storage"],
+      "removable": true
+    },
+    {
+      "id": "radio-browser",
+      "name": "Internet Radio",
+      "version": "1.0.0",
+      "description": "Browse community internet radio stations.",
+      "category": "Music",
+      "accent": "#e94f8a",
+      "icon": "◉",
+      "launch": {
+        "type": "web",
+        "target": "https://www.radio-browser.info/",
+        "fullscreen": true
+      },
+      "permissions": ["network"],
+      "removable": true
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+[Unit]
+Description=WatchOS control service and application runtime
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=lantv
+Group=lantv
+WorkingDirectory=/opt/lantv
+Environment=NODE_ENV=production
+Environment=LANTV_BIND=0.0.0.0
+Environment=LANTV_PORT=8787
+Environment=LANTV_BROWSER=/usr/bin/opera
+Environment=DISPLAY=:0
+Environment=HOME=/home/lantv
+Environment=XDG_RUNTIME_DIR=/tmp/lantv-runtime-1000
+ExecStart=/usr/bin/node /opt/lantv/server/index.mjs
+Restart=always
+RestartSec=2
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/lantv/data /var/lib/lantv
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target

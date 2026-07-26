@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080b12">
+  <title>WatchOS</title>
+  <link rel="stylesheet" href="/tv/styles.css">
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </span>
+        <span id="device-name">WatchOS</span>
+      </div>
+      <div class="topbar-status">
+        <span class="connection" id="connection">
+          <i></i><span>Connecting</span>
+        </span>
+        <time id="clock">--:--</time>
+      </div>
+    </header>
+
+    <section class="hero" id="hero" aria-live="polite">
+      <div class="hero-content">
+        <div class="eyebrow" id="hero-category">YOUR APPS</div>
+        <h1 id="hero-title">Welcome home</h1>
+        <p id="hero-description">Everything on your television, controlled from your phone.</p>
+        <div class="hero-actions">
+          <button class="primary-action" id="open-selected" type="button">
+            <span class="play-icon">▶</span>
+            Open
+          </button>
+          <div class="pairing-pill">
+            <span>Phone pairing</span>
+            <strong id="pairing-code">------</strong>
+          </div>
+        </div>
+      </div>
+      <div class="hero-symbol" id="hero-symbol" aria-hidden="true">TV</div>
+    </section>
+
+    <section class="apps-section" aria-labelledby="apps-heading">
+      <div class="section-heading">
+        <div>
+          <span class="section-kicker">INSTALLED</span>
+          <h2 id="apps-heading">Apps</h2>
+        </div>
+        <span class="app-count" id="app-count">0 apps</span>
+      </div>
+      <div class="app-grid" id="app-grid" role="listbox" aria-label="Installed applications"></div>
+    </section>
+
+    <footer class="footer">
+      <div class="key-hint"><kbd>←</kbd><kbd>→</kbd><span>Navigate</span></div>
+      <div class="key-hint"><kbd>↵</kbd><span>Open</span></div>
+      <div class="key-hint"><kbd>⌂</kbd><span>Home</span></div>
+      <a href="/admin/" class="manage-link">Manage apps</a>
+    </footer>
+  </main>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script type="module" src="/tv/app.js"></script>
+</body>
+</html>

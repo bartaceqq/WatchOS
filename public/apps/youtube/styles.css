@@ -1,0 +1,46 @@
+:root { color-scheme: dark; font-family: Inter, "Segoe UI Variable", "Segoe UI", sans-serif; }
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; background: #09090b; color: #f7f7f8; }
+body { background: radial-gradient(circle at 75% 20%, rgba(255,0,45,.16), transparent 32%), #09090b; }
+button, input { font: inherit; }
+header {
+  height: 82px;
+  padding: 0 48px;
+  display: grid;
+  grid-template-columns: 150px 180px 1fr 190px;
+  gap: 20px;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.home { color: #9ba1ad; text-decoration: none; }
+.youtube-brand { font-size: 20px; font-weight: 800; }
+.youtube-brand span { width: 35px; height: 25px; margin-right: 7px; display: inline-grid; place-items: center; border-radius: 8px; background: #f20d33; font-size: 12px; }
+#video-form { max-width: 650px; justify-self: center; width: 100%; display: flex; }
+#video-input { min-width: 0; height: 43px; flex: 1; padding: 0 15px; border: 1px solid rgba(255,255,255,.12); border-radius: 12px 0 0 12px; outline: 0; background: #141418; color: white; }
+#video-input:focus { border-color: #f20d33; }
+#video-form button { width: 74px; border: 0; border-radius: 0 12px 12px 0; background: #f20d33; color: white; font-weight: 750; }
+.api-badge { justify-self: end; color: #686d77; font-size: 10px; letter-spacing: .15em; }
+main { width: min(1500px, 100%); margin: auto; padding: 54px 58px; }
+.intro { max-width: 900px; padding: 40px 0 58px; }
+.eyebrow { color: #f23754; font-size: 11px; font-weight: 850; letter-spacing: .18em; }
+h1 { max-width: 800px; margin: 12px 0 17px; font-size: clamp(54px, 6vw, 92px); line-height: .98; letter-spacing: -.06em; }
+.intro p { max-width: 730px; color: #a5abb6; font-size: 19px; line-height: 1.55; }
+.actions { display: flex; gap: 11px; margin-top: 29px; }
+.actions button, .actions a { min-height: 48px; padding: 0 20px; border-radius: 12px; display: inline-flex; align-items: center; border: 0; text-decoration: none; font-weight: 750; }
+.actions button { background: #f5f6f8; color: #111216; }
+.actions a { border: 1px solid rgba(255,255,255,.12); color: #ccd0d7; }
+.player-shell { aspect-ratio: 16 / 9; max-height: calc(100vh - 160px); margin: 0 auto; background: black; border-radius: 18px; overflow: hidden; box-shadow: 0 30px 90px rgba(0,0,0,.5); }
+#player, #player iframe { width: 100%; height: 100%; }
+.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; }
+.features article { padding: 25px; border: 1px solid rgba(255,255,255,.08); border-radius: 17px; background: #121216; }
+.features article > span { color: #f23754; font-size: 11px; }
+.features strong { display: block; margin: 20px 0 8px; font-size: 18px; }
+.features p { margin: 0; color: #7f8590; line-height: 1.5; }
+.toast { position: fixed; left: 50%; bottom: 35px; padding: 12px 17px; border-radius: 10px; background: #25252b; opacity: 0; transform: translate(-50%, 15px); transition: .2s; }
+.toast.visible { opacity: 1; transform: translate(-50%, 0); }
+@media(max-width: 850px) {
+  header { padding: 0 20px; grid-template-columns: 70px 1fr; }
+  .youtube-brand, .api-badge { display: none; }
+  main { padding: 35px 22px; }
+  .features { grid-template-columns: 1fr; }
+}

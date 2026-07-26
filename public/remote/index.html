@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0d14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>WatchOS Remote</title>
+  <link rel="manifest" href="/remote/manifest.webmanifest">
+  <link rel="stylesheet" href="/remote/styles.css">
+</head>
+<body>
+  <main class="remote-shell">
+    <header>
+      <div>
+        <span class="overline">LANTV REMOTE</span>
+        <h1 id="device-name">Living Room</h1>
+      </div>
+      <span class="status" id="status"><i></i><span>Offline</span></span>
+    </header>
+
+    <section class="pair-card" id="pair-card">
+      <span class="overline">CONNECT TO YOUR TV</span>
+      <h2>Enter the six-digit code</h2>
+      <p>The code is shown on the WatchOS home screen.</p>
+      <form id="pair-form">
+        <input id="pair-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-label="Pairing code">
+        <button type="submit">Pair phone</button>
+      </form>
+      <p class="error" id="pair-error"></p>
+    </section>
+
+    <section class="controls" id="controls" hidden>
+      <div class="quick-row">
+        <button class="round" data-command="home" aria-label="Home">⌂</button>
+        <button class="round" data-command="back" aria-label="Back">↶</button>
+        <button class="search-button" data-command="search">
+          <span>⌕</span> Search on TV
+        </button>
+        <button class="round" data-command="menu" aria-label="Menu">•••</button>
+      </div>
+
+      <div class="dpad" aria-label="Directional controls">
+        <button class="dpad-up" data-command="up" aria-label="Up">▲</button>
+        <button class="dpad-left" data-command="left" aria-label="Left">◀</button>
+        <button class="dpad-ok" data-command="ok" aria-label="OK">OK</button>
+        <button class="dpad-right" data-command="right" aria-label="Right">▶</button>
+        <button class="dpad-down" data-command="down" aria-label="Down">▼</button>
+      </div>
+
+      <div class="media-row">
+        <button data-command="previous" aria-label="Previous">|◀</button>
+        <button class="play" data-command="playPause" aria-label="Play or pause">▶︎</button>
+        <button data-command="next" aria-label="Next">▶|</button>
+      </div>
+
+      <div class="volume-row">
+        <button data-command="volumeDown"><span>−</span> Volume</button>
+        <button data-command="mute" aria-label="Mute">⌁</button>
+        <button data-command="volumeUp"><span>+</span> Volume</button>
+      </div>
+
+      <form class="keyboard" id="keyboard-form">
+        <input id="keyboard-input" placeholder="Type on the TV…" autocomplete="off">
+        <button type="submit">Send</button>
+      </form>
+
+      <section class="apps">
+        <div class="section-title">
+          <div>
+            <span class="overline">QUICK LAUNCH</span>
+            <h2>Apps</h2>
+          </div>
+          <a href="/admin/">Manage</a>
+        </div>
+        <div class="app-list" id="app-list"></div>
+      </section>
+    </section>
+  </main>
+  <div class="haptic" id="haptic"></div>
+  <script type="module" src="/remote/app.js"></script>
+</body>
+</html>

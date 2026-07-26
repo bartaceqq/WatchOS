@@ -1,0 +1,9 @@
+{
+  "name": "WatchOS Remote",
+  "short_name": "TV Remote",
+  "start_url": "/remote/",
+  "display": "standalone",
+  "background_color": "#090c13",
+  "theme_color": "#0a0d14",
+  "description": "LAN remote control for WatchOS"
+}
