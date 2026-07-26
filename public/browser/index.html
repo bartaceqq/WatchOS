@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090d15">
+  <title>WatchOS Browser</title>
+  <link rel="stylesheet" href="/browser/styles.css">
+</head>
+<body>
+  <main>
+    <span class="eyebrow">WATCHOS BROWSER</span>
+    <h1>Where do you want to go?</h1>
+    <form id="address-form">
+      <input id="address" inputmode="url" autocomplete="off" placeholder="Search the web or enter an address">
+      <button>Go</button>
+    </form>
+    <section class="quick-links">
+      <a href="https://www.google.com">Google</a>
+      <a href="https://www.youtube.com">YouTube</a>
+      <a href="https://www.wikipedia.org">Wikipedia</a>
+    </section>
+    <p class="hint">Arrow keys move the pointer · Enter clicks · focus a text field for the TV keyboard · F4 exits</p>
+  </main>
+  <script type="module" src="/browser/app.js"></script>
+</body>
+</html>

@@ -109,6 +109,10 @@ async function saveState(nextState = state) {
 }
 
 function publicState() {
+  const lanAddress = Object.values(os.networkInterfaces())
+    .flat()
+    .find((item) => item && item.family === "IPv4" && !item.internal)?.address;
+
   return {
     schemaVersion: state.schemaVersion,
     device: state.device,
@@ -116,6 +120,7 @@ function publicState() {
     favorites: state.favorites,
     pairingRequired: true,
     pairingCode: state.pairing.code,
+    remoteUrl: lanAddress ? `http://${lanAddress}:${port}/remote/` : `http://localhost:${port}/remote/`,
     updatedAt: state.updatedAt
   };
 }
@@ -480,6 +485,24 @@ function runDesktopCommand(executable, argumentsList) {
 }
 
 function handleRemoteCommand(command) {
+  if (command === "volumeUp" || command === "volumeDown") {
+    if (process.platform === "linux") {
+      runDesktopCommand("/usr/bin/wpctl", [
+        "set-volume", "@DEFAULT_AUDIO_SINK@",
+        command === "volumeUp" ? "5%+" : "5%-"
+      ]);
+    }
+    broadcast({ type: "command", command }, "tv");
+    return;
+  }
+  if (command === "mute") {
+    if (process.platform === "linux") {
+      runDesktopCommand("/usr/bin/wpctl", ["set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"]);
+    }
+    broadcast({ type: "command", command }, "tv");
+    return;
+  }
+
   if (process.platform !== "linux" || !runtimeIsActive()) {
     broadcast({ type: "command", command }, "tv");
     return;
@@ -514,18 +537,6 @@ function handleRemoteCommand(command) {
     return;
   }
 
-  if (command === "volumeUp" || command === "volumeDown") {
-    runDesktopCommand("/usr/bin/wpctl", [
-      "set-volume", "@DEFAULT_AUDIO_SINK@",
-      command === "volumeUp" ? "5%+" : "5%-"
-    ]);
-    return;
-  }
-  if (command === "mute") {
-    runDesktopCommand("/usr/bin/wpctl", ["set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"]);
-    return;
-  }
-
   const key = {
     up: "Up",
     down: "Down",
@@ -539,7 +550,8 @@ function handleRemoteCommand(command) {
     search: "ctrl+l",
     menu: "shift+F10"
   }[command];
-  if (key) runDesktopCommand("/usr/bin/xdotool", ["key", "--clearmodifiers", key]);
+  if (!key) return;
+  runDesktopCommand("/usr/bin/xdotool", ["key", "--clearmodifiers", key]);
 }
 
 function handleRemoteText(text) {
@@ -579,6 +591,7 @@ function launchRuntimeApplication(application) {
       "--start-fullscreen",
       "--no-first-run",
       "--disable-session-crashed-bubble",
+      "--hide-crash-restore-bubble",
       ...browserExtraArguments,
       `--user-data-dir=${browserProfilePath}`,
       launch.target
@@ -599,15 +612,18 @@ function launchRuntimeApplication(application) {
       throw new Error("AppImages must be installed under /opt/lantv/apps.");
     }
   } else if (launch.type === "system" && launch.action === "browser") {
-    executable = process.env.LANTV_BROWSER ?? "/usr/bin/opera";
-    browserProfilePath = "/var/lib/lantv/browser-profiles/browser";
+    executable = process.env.LANTV_SYSTEM_BROWSER ?? "/usr/bin/chromium";
+    browserProfilePath = "/var/lib/lantv/browser-profiles/chromium";
     argumentsList = [
       "--start-fullscreen",
       "--no-first-run",
       "--disable-session-crashed-bubble",
+      "--hide-crash-restore-bubble",
       ...browserExtraArguments,
+      "--class=WatchOSBrowser",
+      "--load-extension=/opt/lantv/appliance/browser-extension",
       `--user-data-dir=${browserProfilePath}`,
-      "about:blank"
+      "http://127.0.0.1:8787/browser/"
     ];
   } else {
     throw new Error(`Unsupported runtime action: ${launch.type}`);
@@ -617,12 +633,19 @@ function launchRuntimeApplication(application) {
     throw new Error(`${application.name} is not installed on this WatchOS device.`);
   }
 
+  const runtimeHome = "/var/lib/lantv/runtime-home";
+  fsSync.mkdirSync(path.join(runtimeHome, ".config"), { recursive: true });
+  fsSync.mkdirSync(path.join(runtimeHome, ".cache"), { recursive: true });
+
   const child = spawn(executable, argumentsList, {
     detached: true,
     stdio: ["ignore", "ignore", "pipe"],
     env: {
       ...process.env,
       DISPLAY: process.env.DISPLAY ?? ":0",
+      HOME: runtimeHome,
+      XDG_CONFIG_HOME: path.join(runtimeHome, ".config"),
+      XDG_CACHE_HOME: path.join(runtimeHome, ".cache"),
       XDG_RUNTIME_DIR: process.env.XDG_RUNTIME_DIR ?? "/run/user/1000"
     }
   });

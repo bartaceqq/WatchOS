@@ -1,3 +1,5 @@
+import { createTvKeyboard } from "/shared/tv-keyboard.js";
+
 const tokenKey = "watchos.remote.token";
 const localControl = ["127.0.0.1", "localhost", "::1", "[::1]"].includes(location.hostname);
 let token = localStorage.getItem(tokenKey) ?? "";
@@ -29,8 +31,13 @@ const elements = {
   remoteAddress: document.querySelector("#remote-address"),
   tvAddress: document.querySelector("#tv-address"),
   healthStatus: document.querySelector("#health-status"),
+  settingsPairingCode: document.querySelector("#settings-pairing-code"),
+  settingsRemoteAddress: document.querySelector("#settings-remote-address"),
   toast: document.querySelector("#toast")
 };
+const tvKeyboard = createTvKeyboard({
+  onDone: () => stopEditing(false)
+});
 
 function headers() {
   return {
@@ -85,6 +92,8 @@ function render(nextState) {
 
   elements.remoteAddress.textContent = `${location.origin}/remote/`;
   elements.tvAddress.textContent = `${location.origin}/tv/`;
+  elements.settingsPairingCode.textContent = state.pairingCode ?? "------";
+  elements.settingsRemoteAddress.textContent = state.remoteUrl ?? `${location.origin}/remote/`;
 }
 
 function manifestFromForm(form) {
@@ -352,17 +361,19 @@ function startEditing(control) {
   editingControl = control;
   control.classList.add("tv-editing");
   showToast("Editing control · press OK or Back when finished");
+  if (control.matches("input:not([type=color]), textarea")) tvKeyboard.open(control);
 }
 
-function stopEditing() {
+function stopEditing(closeKeyboard = true) {
   if (!editingControl) return;
+  if (closeKeyboard) tvKeyboard.close();
   editingControl.classList.remove("tv-editing");
   editingControl = null;
 }
 
 function returnToTelevision() {
   stopEditing();
-  location.assign("/tv/");
+  location.assign("/tv/?dock=1");
 }
 
 function closePanelOrReturn() {
@@ -389,6 +400,7 @@ function executeTvCommand(command) {
     returnToTelevision();
     return;
   }
+  if (tvKeyboard.isOpen() && tvKeyboard.handle(command)) return;
   if (editingControl) {
     if (editingControl.matches("select") && ["up", "down", "left", "right"].includes(command)) {
       cycleSelect(editingControl, command === "up" || command === "left" ? -1 : 1);
@@ -434,9 +446,10 @@ document.addEventListener("keydown", (event) => {
     M: "menu"
   }[event.key];
   if (!command) return;
-  if (editingControl && !editingControl.matches("select")
+  if (editingControl && !editingControl.matches("select") && !tvKeyboard.isOpen()
     && ["up", "down", "left", "right"].includes(command)) return;
-  if (editingControl?.matches("input, textarea") && event.key === "Backspace") return;
+  if (editingControl?.matches("input, textarea") && !tvKeyboard.isOpen()
+    && event.key === "Backspace") return;
   event.preventDefault();
   executeTvCommand(command);
 });

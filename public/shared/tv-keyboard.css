@@ -1,0 +1,35 @@
+.tv-keyboard-shell[hidden] { display: none; }
+.tv-keyboard-shell {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  z-index: 100;
+  width: min(1060px, 96vw);
+  padding: 17px 20px 20px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 27px;
+  background: rgba(16,21,31,.98);
+  box-shadow: 0 30px 100px rgba(0,0,0,.68);
+  transform: translateX(-50%);
+}
+.tv-keyboard-head { display: flex; justify-content: space-between; padding: 0 7px 9px; color: #fff; }
+.tv-keyboard-head span { color: #8f9bad; font-size: 12px; }
+.tv-keyboard-row { display: flex; justify-content: center; gap: 8px; margin: 7px 0; }
+.tv-key {
+  min-width: 62px;
+  height: 50px;
+  padding: 0 13px;
+  display: grid;
+  place-items: center;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: #252d3b;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 750;
+}
+.tv-key.selected {
+  border-color: white;
+  background: #7c5cff;
+  transform: translateY(-3px);
+}

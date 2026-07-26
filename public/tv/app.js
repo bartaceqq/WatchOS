@@ -6,10 +6,15 @@ const elements = {
   heroTitle: document.querySelector("#hero-title"),
   heroDescription: document.querySelector("#hero-description"),
   heroSymbol: document.querySelector("#hero-symbol"),
-  pairingCode: document.querySelector("#pairing-code"),
   openSelected: document.querySelector("#open-selected"),
   appGrid: document.querySelector("#app-grid"),
   appCount: document.querySelector("#app-count"),
+  systemDock: document.querySelector("#system-dock"),
+  dockItems: [...document.querySelectorAll("[data-dock-action]")],
+  volumeOsd: document.querySelector("#volume-osd"),
+  volumeIcon: document.querySelector("#volume-icon"),
+  volumeLabel: document.querySelector("#volume-label"),
+  volumeLevel: document.querySelector("#volume-level"),
   toast: document.querySelector("#toast")
 };
 
@@ -18,6 +23,10 @@ let selectedIndex = 0;
 let socket;
 let reconnectTimer;
 let toastTimer;
+let volumeTimer;
+let volumeLevel = 50;
+let muted = false;
+let dockIndex = 0;
 
 function updateClock() {
   const now = new Date();
@@ -46,7 +55,6 @@ function appTypeLabel(application) {
 function render(nextState) {
   state = nextState;
   selectedIndex = Math.min(selectedIndex, Math.max(0, state.apps.length - 1));
-  elements.pairingCode.textContent = state.pairingCode ?? "------";
   elements.appCount.textContent = `${state.apps.length} ${state.apps.length === 1 ? "app" : "apps"}`;
   elements.appGrid.replaceChildren();
 
@@ -93,11 +101,17 @@ function select(index, focus = true) {
 }
 
 function move(direction) {
+  if (!elements.systemDock.hidden) {
+    if (direction === "left") selectDock(dockIndex - 1);
+    if (direction === "right") selectDock(dockIndex + 1);
+    if (direction === "up") closeDock();
+    return;
+  }
   const columns = getComputedStyle(elements.appGrid).gridTemplateColumns.split(" ").length;
   if (direction === "left") select(selectedIndex - 1);
   if (direction === "right") select(selectedIndex + 1);
   if (direction === "up") select(selectedIndex - columns);
-  if (direction === "down") select(selectedIndex + columns);
+  if (direction === "down") showDock();
 }
 
 async function launchSelected() {
@@ -128,6 +142,69 @@ async function launch(application) {
   }
 }
 
+function selectDock(index) {
+  dockIndex = (index + elements.dockItems.length) % elements.dockItems.length;
+  elements.dockItems.forEach((item, itemIndex) => {
+    item.classList.toggle("selected", itemIndex === dockIndex);
+  });
+  elements.dockItems[dockIndex]?.focus({ preventScroll: true });
+}
+
+function showDock(action = "home") {
+  elements.systemDock.hidden = false;
+  const preferred = elements.dockItems.findIndex((item) => item.dataset.dockAction === action);
+  selectDock(preferred >= 0 ? preferred : 0);
+}
+
+function closeDock() {
+  elements.systemDock.hidden = true;
+  elements.dockItems.forEach((item) => item.classList.remove("selected"));
+  select(selectedIndex);
+}
+
+async function sendSystemCommand(command) {
+  await fetch(`/api/runtime/command/${command}`, { method: "POST" });
+}
+
+function showVolume(command) {
+  clearTimeout(volumeTimer);
+  if (command === "volumeUp") {
+    muted = false;
+    volumeLevel = Math.min(100, volumeLevel + 5);
+  }
+  if (command === "volumeDown") {
+    muted = false;
+    volumeLevel = Math.max(0, volumeLevel - 5);
+  }
+  if (command === "mute") muted = !muted;
+  elements.volumeIcon.innerHTML = muted ? "&#128263;" : "&#128266;";
+  elements.volumeLabel.textContent = muted ? "Muted" : `Volume ${volumeLevel}`;
+  elements.volumeLevel.style.width = `${muted ? 0 : volumeLevel}%`;
+  elements.volumeOsd.hidden = false;
+  volumeTimer = setTimeout(() => { elements.volumeOsd.hidden = true; }, 1800);
+}
+
+async function activateDockItem() {
+  const action = elements.dockItems[dockIndex]?.dataset.dockAction;
+  if (action === "home" || action === "apps") {
+    closeDock();
+    document.querySelector(".apps-section")?.scrollIntoView({ block: "nearest" });
+    return;
+  }
+  if (action === "settings") {
+    window.location.assign("/admin/");
+    return;
+  }
+  if (action === "browser") {
+    const browserApp = state.apps.find((application) => application.id === "browser");
+    if (browserApp) await launch(browserApp);
+    return;
+  }
+  if (["volumeDown", "volumeUp", "mute"].includes(action)) {
+    await sendSystemCommand(action);
+  }
+}
+
 function handleCommand(message) {
   if (message.command === "launch" && message.appId) {
     const index = state.apps.findIndex((item) => item.id === message.appId);
@@ -145,11 +222,15 @@ function handleCommand(message) {
     right: "right"
   };
   if (keyMap[message.command]) move(keyMap[message.command]);
-  if (message.command === "ok") launchSelected();
-  if (message.command === "home") window.location.assign("/tv/");
+  if (message.command === "ok") {
+    if (elements.systemDock.hidden) launchSelected();
+    else activateDockItem();
+  }
+  if (message.command === "home") showDock("home");
   if (message.command === "back") history.back();
   if (message.command === "exit") window.location.assign("/tv/");
-  if (message.command === "menu") window.location.assign("/admin/");
+  if (message.command === "menu") showDock("settings");
+  if (["volumeDown", "volumeUp", "mute"].includes(message.command)) showVolume(message.command);
   if (message.command === "search") showToast("Search will be available in the next launcher build.");
 }
 
@@ -197,6 +278,7 @@ document.addEventListener("keydown", (event) => {
     Escape: "back",
     Backspace: "back",
     Home: "home",
+    Meta: "home",
     F4: "exit",
     m: "menu",
     M: "menu",
@@ -204,11 +286,25 @@ document.addEventListener("keydown", (event) => {
   }[event.key];
   if (!command) return;
   event.preventDefault();
+  if (command === "back" && !elements.systemDock.hidden) {
+    closeDock();
+    return;
+  }
   handleCommand({ command });
 });
 
 elements.openSelected.addEventListener("click", launchSelected);
+elements.dockItems.forEach((item, index) => {
+  item.addEventListener("focus", () => selectDock(index));
+  item.addEventListener("click", () => {
+    dockIndex = index;
+    activateDockItem();
+  });
+});
 updateClock();
 setInterval(updateClock, 15_000);
-fetch("/api/state").then((response) => response.json()).then(render);
+fetch("/api/state").then((response) => response.json()).then((nextState) => {
+  render(nextState);
+  if (new URLSearchParams(location.search).get("dock") === "1") showDock();
+});
 connect();

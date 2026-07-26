@@ -1,0 +1,36 @@
+:root { color-scheme: dark; font-family: Inter, "Segoe UI", sans-serif; }
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 70% 10%, rgba(47, 202, 190, .2), transparent 34%),
+    #090d15;
+  color: #f7f9fc;
+}
+main { width: min(920px, 86vw); }
+.eyebrow { color: #4dd8cc; font-size: 12px; font-weight: 800; letter-spacing: .18em; }
+h1 { margin: 18px 0 30px; font-size: 64px; letter-spacing: -.055em; }
+form { display: grid; grid-template-columns: 1fr 110px; gap: 10px; }
+input, button, a { font: inherit; }
+input {
+  height: 70px;
+  padding: 0 22px;
+  border: 2px solid rgba(255,255,255,.13);
+  border-radius: 18px;
+  outline: 0;
+  background: #111824;
+  color: white;
+  font-size: 20px;
+}
+button, .quick-links a {
+  border: 0;
+  border-radius: 18px;
+  background: #2ec4b6;
+  color: #07100f;
+  font-weight: 800;
+}
+.quick-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px; }
+.quick-links a { padding: 22px; background: #151d2b; color: white; text-decoration: none; text-align: center; }
+.hint { margin-top: 32px; color: #8793a7; }

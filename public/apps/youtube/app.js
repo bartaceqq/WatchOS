@@ -1,3 +1,5 @@
+import { createTvKeyboard } from "/shared/tv-keyboard.js";
+
 const form = document.querySelector("#video-form");
 const input = document.querySelector("#video-input");
 const intro = document.querySelector("#intro");
@@ -8,6 +10,12 @@ let pendingVideoId;
 let socket;
 let toastTimer;
 let editingInput = false;
+const tvKeyboard = createTvKeyboard({
+  onDone: () => {
+    editingInput = false;
+    input.classList.remove("tv-editing");
+  }
+});
 
 function parseVideoId(value) {
   const text = value.trim();
@@ -65,8 +73,19 @@ window.onYouTubeIframeAPIReady = () => {
 };
 
 function command(name) {
-  if (name === "home" || name === "back" || name === "exit") location.assign("/tv/");
-  if (name === "menu") location.assign("/admin/");
+  if (name === "home") {
+    location.assign("/tv/?dock=1");
+    return;
+  }
+  if (name === "menu") {
+    location.assign("/admin/");
+    return;
+  }
+  if (tvKeyboard.isOpen() && tvKeyboard.handle(name)) return;
+  if (name === "back" || name === "exit") {
+    location.assign("/tv/");
+    return;
+  }
   if (name === "playPause" && player) {
     player.getPlayerState() === YT.PlayerState.PLAYING ? player.pauseVideo() : player.playVideo();
   }
@@ -104,6 +123,7 @@ function showToast(message) {
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   editingInput = false;
+  tvKeyboard.close();
   input.classList.remove("tv-editing");
   play(input.value);
 });
@@ -111,6 +131,7 @@ document.querySelector("#focus-input").addEventListener("click", () => {
   input.focus();
   editingInput = true;
   input.classList.add("tv-editing");
+  tvKeyboard.open(input);
   showToast("Type a link · press OK when finished");
 });
 
@@ -166,11 +187,18 @@ document.addEventListener("keydown", (event) => {
     return;
   }
   if (editingInput) {
-    if (event.key === "Escape") {
+    const keyboardCommand = {
+      ArrowUp: "up",
+      ArrowDown: "down",
+      ArrowLeft: "left",
+      ArrowRight: "right",
+      Enter: "ok",
+      Escape: "back",
+      Backspace: "back"
+    }[event.key];
+    if (keyboardCommand) {
       event.preventDefault();
-      editingInput = false;
-      input.classList.remove("tv-editing");
-      document.querySelector("#focus-input").focus();
+      tvKeyboard.handle(keyboardCommand);
     }
     return;
   }
@@ -189,6 +217,7 @@ document.addEventListener("keydown", (event) => {
     event.preventDefault();
     editingInput = true;
     input.classList.add("tv-editing");
+    tvKeyboard.open(input);
     showToast("Type a link · press OK when finished");
   }
 });

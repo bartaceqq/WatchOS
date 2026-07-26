@@ -126,6 +126,27 @@ h3 { margin: 5px 0 0; font-size: 21px; }
   font-size: 12px;
 }
 
+.remote-pair-card {
+  max-width: 720px;
+}
+
+.remote-pair-card > strong {
+  display: block;
+  margin: 20px 0 14px;
+  font-size: 58px;
+  line-height: 1;
+  letter-spacing: .18em;
+}
+
+.remote-pair-card p {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.remote-pair-card code {
+  color: #b9abff;
+}
+
 .auth-banner {
   margin-top: 28px;
   padding: 16px 18px;

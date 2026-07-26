@@ -23,6 +23,16 @@
         <command>/usr/bin/curl --silent --request POST http://127.0.0.1:8787/api/runtime/command/home</command>
       </action>
     </keybind>
+    <keybind key="Super_L">
+      <action name="Execute">
+        <command>/usr/bin/curl --silent --request POST http://127.0.0.1:8787/api/runtime/command/home</command>
+      </action>
+    </keybind>
+    <keybind key="Super_R">
+      <action name="Execute">
+        <command>/usr/bin/curl --silent --request POST http://127.0.0.1:8787/api/runtime/command/home</command>
+      </action>
+    </keybind>
     <keybind key="XF86HomePage">
       <action name="Execute">
         <command>/usr/bin/curl --silent --request POST http://127.0.0.1:8787/api/runtime/command/home</command>
@@ -36,6 +46,21 @@
     <keybind key="Menu">
       <action name="Execute">
         <command>/usr/bin/curl --silent --request POST http://127.0.0.1:8787/api/runtime/command/menu</command>
+      </action>
+    </keybind>
+    <keybind key="XF86AudioRaiseVolume">
+      <action name="Execute">
+        <command>/usr/bin/curl --silent --request POST http://127.0.0.1:8787/api/runtime/command/volumeUp</command>
+      </action>
+    </keybind>
+    <keybind key="XF86AudioLowerVolume">
+      <action name="Execute">
+        <command>/usr/bin/curl --silent --request POST http://127.0.0.1:8787/api/runtime/command/volumeDown</command>
+      </action>
+    </keybind>
+    <keybind key="XF86AudioMute">
+      <action name="Execute">
+        <command>/usr/bin/curl --silent --request POST http://127.0.0.1:8787/api/runtime/command/mute</command>
       </action>
     </keybind>
   </keyboard>

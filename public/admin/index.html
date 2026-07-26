@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#0b0e15">
   <title>WatchOS Settings</title>
   <link rel="stylesheet" href="/admin/styles.css">
+  <link rel="stylesheet" href="/shared/tv-keyboard.css">
 </head>
 <body>
   <main class="layout">
@@ -14,6 +15,7 @@
       <nav>
         <button class="active" data-section="applications">Applications</button>
         <button data-section="device">Device</button>
+        <button data-section="remote">Phone remote</button>
         <button data-section="connection">Connection</button>
       </nav>
       <a class="back-link" href="/tv/">← Back to television</a>
@@ -172,6 +174,21 @@
           <code id="tv-address"></code>
           <span>Service health</span>
           <code id="health-status">Checking…</code>
+        </div>
+      </section>
+
+      <section class="page" id="remote">
+        <div class="page-heading">
+          <div>
+            <h2>Connect a phone remote</h2>
+            <p>Pairing is managed here and nowhere else on the television.</p>
+          </div>
+        </div>
+        <div class="settings-card remote-pair-card">
+          <span class="eyebrow">PAIRING CODE</span>
+          <strong id="settings-pairing-code">------</strong>
+          <p>On your phone, open <code id="settings-remote-address"></code> and enter this code.</p>
+          <p>The code changes after a phone connects. Existing paired phones remain connected.</p>
         </div>
       </section>
     </section>

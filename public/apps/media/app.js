@@ -55,7 +55,7 @@ function moveFocus(direction) {
 
 function command(name) {
   if (name === "home" || name === "back" || name === "exit") {
-    location.assign("/tv/");
+    location.assign(name === "home" ? "/tv/?dock=1" : "/tv/");
     return;
   }
   if (name === "menu") {

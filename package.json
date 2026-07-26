@@ -8,7 +8,7 @@
     "start": "node server/index.mjs",
     "repository": "node repository/server.mjs",
     "dev": "node --watch server/index.mjs",
-    "check": "node --check server/index.mjs && node --check repository/server.mjs && node --check public/tv/app.js && node --check public/remote/app.js && node --check public/admin/app.js && node --check public/apps/youtube/app.js && node --check public/apps/media/app.js",
+    "check": "node --check server/index.mjs && node --check repository/server.mjs && node --check public/tv/app.js && node --check public/remote/app.js && node --check public/admin/app.js && node --check public/apps/youtube/app.js && node --check public/apps/media/app.js && node --check public/browser/app.js && node --check public/shared/tv-keyboard.js && node --check appliance/browser-extension/content.js",
     "test:smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {

@@ -18,10 +18,6 @@
           <span id="date">WELCOME</span>
           <time id="clock">--:--</time>
         </div>
-        <a class="settings-button" href="/admin/" aria-label="Open settings">
-          <span class="settings-icon" aria-hidden="true">&#9881;</span>
-          <span>Settings</span>
-        </a>
       </div>
     </header>
 
@@ -29,16 +25,12 @@
       <div class="hero-content">
         <div class="eyebrow" id="hero-category">YOUR APPS</div>
         <h1 id="hero-title">Welcome home</h1>
-        <p id="hero-description">Everything on your television, controlled from your phone.</p>
+        <p id="hero-description">Everything on your television, controlled your way.</p>
         <div class="hero-actions">
           <button class="primary-action" id="open-selected" type="button">
             <span class="play-icon">&#9654;</span>
             Open
           </button>
-          <div class="pairing-pill">
-            <span>Phone pairing</span>
-            <strong id="pairing-code">------</strong>
-          </div>
         </div>
       </div>
       <div class="hero-symbol" id="hero-symbol" aria-hidden="true">TV</div>
@@ -60,10 +52,26 @@
       <div class="key-hint"><kbd>Enter</kbd><span>Open</span></div>
       <div class="key-hint"><kbd>Esc</kbd><span>Return</span></div>
       <div class="key-hint"><kbd>F4</kbd><span>Exit app</span></div>
-      <div class="key-hint"><kbd>Home</kbd><span>Home</span></div>
+      <div class="key-hint"><kbd>Win</kbd><span>Home dock</span></div>
     </footer>
   </main>
 
+  <section class="system-dock" id="system-dock" hidden aria-label="WatchOS Home dock">
+    <div class="dock-rail" role="toolbar">
+      <button data-dock-action="home"><span>&#8962;</span><small>Home</small></button>
+      <button data-dock-action="apps"><span>&#9638;</span><small>Apps</small></button>
+      <button data-dock-action="browser"><span>&#9673;</span><small>Browser</small></button>
+      <button data-dock-action="settings"><span>&#9881;</span><small>Settings</small></button>
+      <i></i>
+      <button data-dock-action="volumeDown"><span>&minus;</span><small>Volume</small></button>
+      <button data-dock-action="mute"><span>&#128263;</span><small>Mute</small></button>
+      <button data-dock-action="volumeUp"><span>+</span><small>Volume</small></button>
+    </div>
+  </section>
+  <div class="volume-osd" id="volume-osd" hidden>
+    <span id="volume-icon">&#128266;</span>
+    <div><strong id="volume-label">Volume 50</strong><i><b id="volume-level"></b></i></div>
+  </div>
   <div class="toast" id="toast" role="status"></div>
   <script type="module" src="/tv/app.js"></script>
 </body>
