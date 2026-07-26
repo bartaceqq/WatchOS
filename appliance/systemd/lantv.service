@@ -18,11 +18,11 @@ Environment=XDG_RUNTIME_DIR=/tmp/lantv-runtime-1000
 ExecStart=/usr/bin/node /opt/lantv/server/index.mjs
 Restart=always
 RestartSec=2
-NoNewPrivileges=true
-PrivateTmp=true
+NoNewPrivileges=false
+PrivateTmp=false
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/opt/lantv/data /var/lib/lantv
+ReadWritePaths=/opt/lantv/data /var/lib/lantv /tmp
 CapabilityBoundingSet=
 
 [Install]

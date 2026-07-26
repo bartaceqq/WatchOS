@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import fsSync from "node:fs";
 import fs from "node:fs/promises";
 import http from "node:http";
 import os from "node:os";
@@ -16,12 +17,16 @@ const dataDir = path.join(root, "data");
 const statePath = path.join(dataDir, "state.json");
 const port = Number.parseInt(process.env.LANTV_PORT ?? "8787", 10);
 const bindAddress = process.env.LANTV_BIND ?? "0.0.0.0";
+const browserExtraArguments = process.env.LANTV_DISABLE_GPU === "1"
+  ? ["--disable-gpu", "--disable-gpu-compositing"]
+  : [];
 const remoteCommands = new Set([
   "up", "down", "left", "right", "ok", "back", "home",
   "playPause", "previous", "next", "volumeUp", "volumeDown",
   "mute", "search", "menu", "exit"
 ]);
 let activeRuntimePid = null;
+let activeRuntimeKillPattern = null;
 
 const app = express();
 const server = http.createServer(app);
@@ -72,9 +77,13 @@ async function loadState() {
     const builtinsById = new Map(builtinCatalog.apps.map((item) => [item.id, item]));
     const mergedApps = loaded.apps.filter((item) => item.id !== "settings").map((item) => {
       const builtin = builtinsById.get(item.id);
-      return builtin && builtin.removable === false
-        ? { ...builtin, ...item, launch: { ...builtin.launch, ...item.launch } }
-        : item;
+      if (builtin && item.id === "media") {
+        return { ...item, ...builtin, launch: { ...item.launch, ...builtin.launch } };
+      }
+      if (builtin?.removable === false) {
+        return { ...builtin, ...item, launch: { ...builtin.launch, ...item.launch } };
+      }
+      return item;
     });
     for (const builtin of builtinCatalog.apps) {
       if (builtin.removable === false && !mergedApps.some((item) => item.id === builtin.id)) {
@@ -132,7 +141,15 @@ function bearerToken(request) {
   return header.startsWith("Bearer ") ? header.slice(7) : "";
 }
 
+function isLocalRequest(request) {
+  const address = request.socket.remoteAddress ?? "";
+  return address === "127.0.0.1"
+    || address === "::1"
+    || address === "::ffff:127.0.0.1";
+}
+
 function authorized(request) {
+  if (isLocalRequest(request)) return true;
   const token = bearerToken(request);
   return token && state.pairing.tokens.some((item) => item.token === token);
 }
@@ -338,12 +355,8 @@ app.post("/api/runtime/apps/:id/launch", async (request, response) => {
 });
 
 app.post("/api/runtime/command/:command", (request, response) => {
-  const address = request.socket.remoteAddress ?? "";
-  const localRequest = address === "127.0.0.1"
-    || address === "::1"
-    || address === "::ffff:127.0.0.1";
   const command = String(request.params.command ?? "");
-  if (!localRequest) {
+  if (!isLocalRequest(request)) {
     response.status(403).json({ error: "Runtime commands are local-only." });
     return;
   }
@@ -442,6 +455,7 @@ function broadcast(message, role = null) {
 }
 
 function runtimeIsActive() {
+  if (activeRuntimeKillPattern) return true;
   if (!activeRuntimePid || process.platform !== "linux") return false;
   try {
     process.kill(activeRuntimePid, 0);
@@ -472,12 +486,24 @@ function handleRemoteCommand(command) {
   }
 
   if (command === "home" || command === "exit") {
+    if (activeRuntimeKillPattern) {
+      const killPattern = activeRuntimeKillPattern;
+      runDesktopCommand("/usr/bin/pkill", [
+        "--signal", "TERM", "--full", killPattern
+      ]);
+      setTimeout(() => {
+        runDesktopCommand("/usr/bin/pkill", [
+          "--signal", "KILL", "--full", killPattern
+        ]);
+      }, 500);
+    }
     try {
       process.kill(-activeRuntimePid, "SIGTERM");
     } catch {
       // The application may already be closing.
     }
     activeRuntimePid = null;
+    activeRuntimeKillPattern = null;
     broadcast({ type: "command", command }, "tv");
     setTimeout(() => {
       runDesktopCommand("/usr/bin/xdotool", [
@@ -543,16 +569,18 @@ function launchRuntimeApplication(application) {
 
   let executable;
   let argumentsList;
+  let browserProfilePath = null;
 
   if (launch.type === "web") {
     executable = process.env.LANTV_BROWSER ?? "/usr/bin/opera";
+    const browserProfile = launch.browserProfile ?? application.id;
+    browserProfilePath = `/var/lib/lantv/browser-profiles/${safeSegment(browserProfile)}`;
     argumentsList = [
       "--start-fullscreen",
       "--no-first-run",
       "--disable-session-crashed-bubble",
-      ...(launch.browserProfile
-        ? [`--user-data-dir=/var/lib/lantv/browser-profiles/${safeSegment(launch.browserProfile)}`]
-        : []),
+      ...browserExtraArguments,
+      `--user-data-dir=${browserProfilePath}`,
       launch.target
     ];
   } else if (launch.type === "native") {
@@ -572,24 +600,45 @@ function launchRuntimeApplication(application) {
     }
   } else if (launch.type === "system" && launch.action === "browser") {
     executable = process.env.LANTV_BROWSER ?? "/usr/bin/opera";
-    argumentsList = ["--start-fullscreen", "about:blank"];
+    browserProfilePath = "/var/lib/lantv/browser-profiles/browser";
+    argumentsList = [
+      "--start-fullscreen",
+      "--no-first-run",
+      "--disable-session-crashed-bubble",
+      ...browserExtraArguments,
+      `--user-data-dir=${browserProfilePath}`,
+      "about:blank"
+    ];
   } else {
     throw new Error(`Unsupported runtime action: ${launch.type}`);
   }
 
+  if (!fsSync.existsSync(executable)) {
+    throw new Error(`${application.name} is not installed on this WatchOS device.`);
+  }
+
   const child = spawn(executable, argumentsList, {
     detached: true,
-    stdio: "ignore",
+    stdio: ["ignore", "ignore", "pipe"],
     env: {
       ...process.env,
       DISPLAY: process.env.DISPLAY ?? ":0",
       XDG_RUNTIME_DIR: process.env.XDG_RUNTIME_DIR ?? "/run/user/1000"
     }
   });
+  child.stderr.setEncoding("utf8");
+  child.stderr.on("data", (message) => {
+    const detail = message.trim();
+    if (detail) console.error(`[runtime:${application.id}] ${detail}`);
+  });
+  child.once("error", (error) => {
+    console.error(`[runtime:${application.id}] ${error.message}`);
+  });
   child.unref();
   activeRuntimePid = child.pid;
+  activeRuntimeKillPattern = browserProfilePath;
   child.once("exit", () => {
-    if (activeRuntimePid === child.pid) activeRuntimePid = null;
+    if (activeRuntimePid === child.pid && !activeRuntimeKillPattern) activeRuntimePid = null;
   });
 
   return {

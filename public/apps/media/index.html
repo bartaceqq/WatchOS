@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111e">
+  <title>LAN Media · WatchOS</title>
+  <link rel="stylesheet" href="/apps/media/styles.css">
+</head>
+<body>
+  <header>
+    <a class="home" href="/tv/">← WatchOS</a>
+    <span class="brand"><span>▶</span> LAN Media</span>
+    <span class="status">LOCAL PLAYER</span>
+  </header>
+
+  <main>
+    <section class="intro" id="intro">
+      <span class="eyebrow">MEDIA CENTER</span>
+      <h1>Your files, on the big screen.</h1>
+      <p>Play a video from this computer now. Shared folders and basement-server libraries will appear here after LAN sources are configured.</p>
+      <div class="actions">
+        <button class="primary" id="open-file">Open local file</button>
+        <a href="/admin/">Set up LAN sources</a>
+      </div>
+      <input id="file-input" type="file" accept="video/*,audio/*" hidden>
+    </section>
+
+    <section class="player-shell" id="player-shell" hidden>
+      <video id="player" controls autoplay></video>
+      <div class="player-meta">
+        <strong id="file-name">Local media</strong>
+        <button id="close-player">Close player</button>
+      </div>
+    </section>
+
+    <section class="source-grid">
+      <article><span>PC</span><strong>Local files</strong><p>Open videos stored on this WatchOS computer.</p></article>
+      <article><span>LAN</span><strong>Network shares</strong><p>SMB and NFS sources will be added during LAN setup.</p></article>
+      <article><span>JF</span><strong>Jellyfin</strong><p>Your server library remains available from the Jellyfin app.</p></article>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script type="module" src="/apps/media/app.js"></script>
+</body>
+</html>

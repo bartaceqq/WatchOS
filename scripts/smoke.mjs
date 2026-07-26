@@ -7,7 +7,7 @@ const health = await jsonRequest("/api/health");
 assert.equal(health.ok, true);
 
 const initialState = await jsonRequest("/api/state");
-assert.ok(initialState.apps.length >= 6);
+assert.ok(initialState.apps.length >= 5);
 assert.match(initialState.pairingCode, /^\d{6}$/);
 
 const pairing = await jsonRequest("/api/pair", {

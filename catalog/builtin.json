@@ -70,19 +70,16 @@
       "id": "media",
       "name": "LAN Media",
       "version": "0.1.0",
-      "description": "Native player for local files and network shares.",
+      "description": "Play local files now and add network shares later.",
       "category": "Library",
       "accent": "#3a86ff",
       "icon": "▸",
       "launch": {
-        "type": "native",
-        "linux": {
-          "executable": "/usr/bin/lantv-media",
-          "arguments": []
-        },
+        "type": "tvapp",
+        "target": "/apps/media/",
         "fullscreen": true
       },
-      "permissions": ["media", "network"],
+      "permissions": ["media"],
       "removable": true
     }
   ]

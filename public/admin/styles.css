@@ -24,6 +24,13 @@ textarea:focus-visible {
   outline-offset: 4px;
 }
 
+input.tv-editing,
+select.tv-editing,
+textarea.tv-editing {
+  outline-color: var(--accent);
+  box-shadow: 0 0 0 7px rgba(128, 102, 255, .18);
+}
+
 .layout {
   min-height: 100vh;
   display: grid;
@@ -126,6 +133,8 @@ h3 { margin: 5px 0 0; font-size: 21px; }
   border-radius: 15px;
   background: rgba(104,77,224,.09);
 }
+
+.auth-banner[hidden] { display: none; }
 
 .auth-banner > div { display: grid; gap: 3px; }
 .auth-banner span { color: var(--muted); font-size: 12px; }

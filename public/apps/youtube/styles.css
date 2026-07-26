@@ -1,5 +1,17 @@
 :root { color-scheme: dark; font-family: Inter, "Segoe UI Variable", "Segoe UI", sans-serif; }
 * { box-sizing: border-box; }
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 4px;
+}
+
+input.tv-editing {
+  outline-color: #ff334f;
+  box-shadow: 0 0 0 7px rgba(255, 51, 79, .2);
+}
 html, body { margin: 0; min-height: 100%; background: #09090b; color: #f7f7f8; }
 body { background: radial-gradient(circle at 75% 20%, rgba(255,0,45,.16), transparent 32%), #09090b; }
 button, input { font: inherit; }

@@ -7,6 +7,7 @@ let player;
 let pendingVideoId;
 let socket;
 let toastTimer;
+let editingInput = false;
 
 function parseVideoId(value) {
   const text = value.trim();
@@ -64,8 +65,8 @@ window.onYouTubeIframeAPIReady = () => {
 };
 
 function command(name) {
-  if (name === "home") location.assign("/tv/");
-  if (name === "back") history.back();
+  if (name === "home" || name === "back" || name === "exit") location.assign("/tv/");
+  if (name === "menu") location.assign("/admin/");
   if (name === "playPause" && player) {
     player.getPlayerState() === YT.PlayerState.PLAYING ? player.pauseVideo() : player.playVideo();
   }
@@ -74,6 +75,9 @@ function command(name) {
   if (name === "volumeUp" && player) player.setVolume(Math.min(100, player.getVolume() + 8));
   if (name === "volumeDown" && player) player.setVolume(Math.max(0, player.getVolume() - 8));
   if (name === "mute" && player) player.isMuted() ? player.unMute() : player.mute();
+  if (!player && ["up", "down", "left", "right"].includes(name)) {
+    moveFocus(`Arrow${name[0].toUpperCase()}${name.slice(1)}`);
+  }
 }
 
 function connect() {
@@ -99,19 +103,94 @@ function showToast(message) {
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
+  editingInput = false;
+  input.classList.remove("tv-editing");
   play(input.value);
 });
-document.querySelector("#focus-input").addEventListener("click", () => input.focus());
+document.querySelector("#focus-input").addEventListener("click", () => {
+  input.focus();
+  editingInput = true;
+  input.classList.add("tv-editing");
+  showToast("Type a link · press OK when finished");
+});
+
+function visibleControls() {
+  return [...document.querySelectorAll("a[href], button:not([disabled]), input:not([disabled])")]
+    .filter((control) => {
+      const bounds = control.getBoundingClientRect();
+      const style = getComputedStyle(control);
+      return style.display !== "none"
+        && style.visibility !== "hidden"
+        && bounds.width > 0
+        && bounds.height > 0;
+    });
+}
+
+function moveFocus(direction) {
+  const controls = visibleControls();
+  if (!controls.length) return;
+  const current = controls.includes(document.activeElement) ? document.activeElement : controls[0];
+  const bounds = current.getBoundingClientRect();
+  const originX = bounds.left + bounds.width / 2;
+  const originY = bounds.top + bounds.height / 2;
+  const vertical = direction === "ArrowUp" || direction === "ArrowDown";
+  const positive = direction === "ArrowDown" || direction === "ArrowRight";
+  const candidate = controls
+    .filter((control) => control !== current)
+    .map((control) => {
+      const next = control.getBoundingClientRect();
+      const x = next.left + next.width / 2;
+      const y = next.top + next.height / 2;
+      const primary = vertical ? y - originY : x - originX;
+      const cross = vertical ? x - originX : y - originY;
+      return { control, primary, score: Math.abs(primary) + Math.abs(cross) * 2.5 };
+    })
+    .filter(({ primary }) => positive ? primary > 4 : primary < -4)
+    .sort((a, b) => a.score - b.score)[0]?.control;
+  const currentIndex = Math.max(0, controls.indexOf(current));
+  const fallback = controls[
+    (currentIndex + (positive ? 1 : -1) + controls.length) % controls.length
+  ];
+  (candidate ?? fallback).focus({ preventScroll: true });
+}
+
 document.addEventListener("keydown", (event) => {
-  const mapped = {
-    Escape: "back",
-    ArrowLeft: "left",
-    ArrowRight: "right",
-    " ": "playPause"
-  }[event.key];
-  if (mapped && document.activeElement !== input) {
+  if (event.key === "Home" || event.key === "F4") {
     event.preventDefault();
-    command(mapped);
+    command("home");
+    return;
+  }
+  if (event.key.toLowerCase() === "m") {
+    event.preventDefault();
+    command("menu");
+    return;
+  }
+  if (editingInput) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      editingInput = false;
+      input.classList.remove("tv-editing");
+      document.querySelector("#focus-input").focus();
+    }
+    return;
+  }
+  if (event.key === "Escape" || event.key === "Backspace") {
+    event.preventDefault();
+    command("back");
+    return;
+  }
+  if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
+    event.preventDefault();
+    if (!player) moveFocus(event.key);
+    else command(event.key === "ArrowLeft" ? "left" : event.key === "ArrowRight" ? "right" : "");
+    return;
+  }
+  if ((event.key === "Enter" || event.key === " ") && document.activeElement === input) {
+    event.preventDefault();
+    editingInput = true;
+    input.classList.add("tv-editing");
+    showToast("Type a link · press OK when finished");
   }
 });
+document.querySelector("#focus-input").focus();
 connect();
