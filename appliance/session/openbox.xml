@@ -12,6 +12,33 @@
   <desktops>
     <number>1</number>
   </desktops>
+  <keyboard>
+    <keybind key="F4">
+      <action name="Execute">
+        <command>/usr/bin/curl --silent --request POST http://127.0.0.1:8787/api/runtime/command/exit</command>
+      </action>
+    </keybind>
+    <keybind key="Home">
+      <action name="Execute">
+        <command>/usr/bin/curl --silent --request POST http://127.0.0.1:8787/api/runtime/command/home</command>
+      </action>
+    </keybind>
+    <keybind key="XF86HomePage">
+      <action name="Execute">
+        <command>/usr/bin/curl --silent --request POST http://127.0.0.1:8787/api/runtime/command/home</command>
+      </action>
+    </keybind>
+    <keybind key="XF86Back">
+      <action name="Execute">
+        <command>/usr/bin/curl --silent --request POST http://127.0.0.1:8787/api/runtime/command/back</command>
+      </action>
+    </keybind>
+    <keybind key="Menu">
+      <action name="Execute">
+        <command>/usr/bin/curl --silent --request POST http://127.0.0.1:8787/api/runtime/command/menu</command>
+      </action>
+    </keybind>
+  </keyboard>
   <applications>
     <application class="*">
       <decor>no</decor>

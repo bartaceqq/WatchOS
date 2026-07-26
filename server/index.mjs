@@ -334,6 +334,24 @@ app.post("/api/runtime/apps/:id/launch", async (request, response) => {
   }
 });
 
+app.post("/api/runtime/command/:command", (request, response) => {
+  const address = request.socket.remoteAddress ?? "";
+  const localRequest = address === "127.0.0.1"
+    || address === "::1"
+    || address === "::ffff:127.0.0.1";
+  const command = String(request.params.command ?? "");
+  if (!localRequest) {
+    response.status(403).json({ error: "Runtime commands are local-only." });
+    return;
+  }
+  if (!remoteCommands.has(command)) {
+    response.status(400).json({ error: "Unsupported runtime command." });
+    return;
+  }
+  handleRemoteCommand(command);
+  response.json({ ok: true });
+});
+
 app.put("/api/device", requireAuthorization, async (request, response) => {
   const allowed = ["name", "theme", "serverUrl", "jellyfinUrl"];
   for (const key of allowed) {
